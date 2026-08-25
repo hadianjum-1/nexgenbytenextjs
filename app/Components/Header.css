@@ -1,0 +1,12 @@
+header{
+    border-bottom: 1px dashed gray;
+}
+.logo{
+    border-right: 1px dashed gray;
+}
+.b{
+    border-left: 1px dashed gray;
+}
+.ulstyle{
+    font-size: 20px;
+}
