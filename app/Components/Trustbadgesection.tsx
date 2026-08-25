@@ -24,14 +24,13 @@ const Trustbadgesection = () => {
   }, []);
 
   const technologies = [
-    "Next.js",
-    "React",
-    "TypeScript",
-    "Node.js",
-    "MongoDB",
-    "Tailwind CSS",
-    "GSAP",
-    "JavaScript",
+    "ParkSide Dental",
+    "Meridian Analytics",
+    "SaaSify",
+    "HealthTech Solutions",
+    "Volta Energy",
+    "Aura Cod",
+  
   ];
 
   return (

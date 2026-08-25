@@ -83,7 +83,7 @@ const Portfolio = () => {
 
           <p className="font-space-grotesk text-text-secondary/60 text-sm sm:text-base max-w-xl mx-auto mt-5 leading-relaxed">
             From high-converting websites to powerful digital experiences,
-            explore some of the work we've created for modern businesses.
+            explore some of the work we&apos;ve created for modern businesses.
           </p>
 
         </div>

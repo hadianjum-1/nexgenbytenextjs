@@ -378,7 +378,7 @@ export default async function ProjectPage({
               mt-8
             "
           >
-            "{project.testimonial.quote}"
+            &quot;{project.testimonial.quote}&quot;
           </blockquote>
 
 
@@ -414,7 +414,7 @@ export default async function ProjectPage({
             </p>
 
             <h2 className="font-space-grotesk text-4xl sm:text-5xl font-bold mt-3">
-              Let's build something
+              Let&apos;s build something
               <br className="hidden sm:block" />
               great together.
             </h2>

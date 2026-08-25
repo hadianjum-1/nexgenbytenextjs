@@ -12,8 +12,9 @@ const Main = () => {
   return (
     <main>
         <Hero/>
-      <About/>
         <Trustbadgesection/>
+      <About/>
+        
         <Services/>
         <Portfolio/>
         <Process/>

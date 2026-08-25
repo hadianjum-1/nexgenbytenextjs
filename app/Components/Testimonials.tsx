@@ -94,7 +94,7 @@ const Testimonials = () => {
           "
         >
           Hear directly from our clients about their experiences and
-          the results we've delivered. Explore Client Feedback.
+          the results we&apos;ve delivered. Explore Client Feedback.
         </p>
 
       </div>

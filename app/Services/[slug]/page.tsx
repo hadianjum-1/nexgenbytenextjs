@@ -244,7 +244,7 @@ export default async function ServicePage({ params }: Props) {
             </h1>
 
             <p className="mx-auto mt-4 max-w-md font-space-grotesk text-text-secondary">
-              The service you're looking for doesn't exist.
+              The service you&apos;re looking for doesn&apos;t exist.
             </p>
 
             <Link
@@ -309,7 +309,7 @@ export default async function ServicePage({ params }: Props) {
 
             <div>
               <p className="font-space-grotesk text-sm uppercase tracking-widest text-secondary">
-                What's Included
+                What&apos;s Included
               </p>
 
               <h2 className="mt-4 font-space-grotesk text-3xl font-bold sm:text-4xl">
@@ -336,7 +336,7 @@ export default async function ServicePage({ params }: Props) {
               </div>
             </div>
 
-            {/* WHO IT'S FOR */}
+            {/* WHO IT&apos;S FOR */}
 
             <div>
               <p className="font-space-grotesk text-sm uppercase tracking-widest text-secondary">
@@ -344,7 +344,7 @@ export default async function ServicePage({ params }: Props) {
               </p>
 
               <h2 className="mt-4 font-space-grotesk text-3xl font-bold sm:text-4xl">
-                Who it's for.
+                Who it&apos;s for.
               </h2>
 
               <div className="mt-10">
@@ -375,7 +375,7 @@ export default async function ServicePage({ params }: Props) {
             </p>
 
             <h2 className="mt-3 max-w-2xl font-space-grotesk text-4xl font-bold sm:text-5xl">
-              Let's build something that grows your business.
+              Let&apos;s build something that grows your business.
             </h2>
 
             <Link

@@ -123,7 +123,7 @@ const Cta = () => {
               lg:text-[6.5rem]
             "
           >
-            Let's Start Talk
+            Let&apos;s Start Talk
           </h2>
 
 

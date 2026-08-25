@@ -3,6 +3,8 @@
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
+import Link from "next/link";
+
 
 const Hero = () => {
 
@@ -263,17 +265,14 @@ const Hero = () => {
             ref={buttonsRef}
             className="flex flex-wrap items-center gap-4 mt-8"
           >
-
-            <a
-              href="#contact"
-              className="bg-text text-background font-space-grotesk px-6 sm:px-7 py-3.5 sm:py-4 rounded-full hover:scale-105 transition-transform"
-            >
+            <Link href="/contact"
+              className="bg-text text-background font-space-grotesk px-6 sm:px-7 py-3.5 sm:py-4 rounded-full hover:scale-105 transition-transform">
               Get Your Free Quote
-            </a>
+            
+            </Link>
 
-
-            <a
-              href="#projects"
+            <Link
+              href="#portfolio"
               className="flex items-center gap-3 font-space-grotesk font-medium group"
             >
 
@@ -283,7 +282,7 @@ const Hero = () => {
 
               View Our Work
 
-            </a>
+            </Link>
 
           </div>
 

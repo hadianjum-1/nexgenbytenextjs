@@ -196,7 +196,7 @@ const Footer = () => {
               <span>⌖</span>
 
               <span>
-                Lahore, Punjab
+                Peshawar, KPK
                 <br />
                 Pakistan
               </span>
@@ -231,7 +231,7 @@ const Footer = () => {
 
             {/* Facebook */}
             <a
-              href="https://www.facebook.com/"
+              href="https://www.facebook.com/people/Nexgenbyte/61586008494111/"
               target="_blank"
               rel="noreferrer"
               aria-label="Facebook"
@@ -242,7 +242,7 @@ const Footer = () => {
 
             {/* Instagram */}
             <a
-              href="https://www.instagram.com/"
+              href="https://www.instagram.com/nexgenbyte1/"
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"
@@ -264,7 +264,7 @@ const Footer = () => {
 
             {/* LinkedIn */}
             <a
-              href="https://www.linkedin.com/"
+              href="https://www.linkedin.com/company/nexgenbyte/?lipi=urn%3Ali%3Apage%3Ad_flagship3_search_srp_all%3BClEAM4%2BlQ1yig39joAb3cg%3D%3D"
               target="_blank"
               rel="noreferrer"
               aria-label="LinkedIn"

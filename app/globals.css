@@ -28,3 +28,9 @@
 .animate-testimonial-scroll {
   animation: testimonial-scroll 35s linear infinite;
 }
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}

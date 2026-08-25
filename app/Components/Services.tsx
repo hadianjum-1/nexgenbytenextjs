@@ -179,8 +179,7 @@ const Services = () => {
     <section
       id="services"
       className="
-        w-[calc(100%-16px)]
-        sm:w-[98vw]
+        w-full
         mx-auto
         bg-text
         text-background
@@ -542,7 +541,7 @@ const Services = () => {
             leading-relaxed
           "
         >
-          Don't see exactly what you need?
+          Don&apos;t see exactly what you need?
           We can build a custom solution around
           your business.
         </p>

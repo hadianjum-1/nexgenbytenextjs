@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -335,15 +336,16 @@ const Process = () => {
             left-1/2
             -translate-x-1/2
 
-            top-[275px]
-            lg:top-[300px]
-            xl:top-[320px]
+            top-[250px]
+            lg:top-[280px]
+            xl:top-[300px]
 
             w-[90%]
             max-w-[1200px]
 
-            h-[calc(100vh-370px)]
+            h-[calc(100vh-350px)]
             min-h-[380px]
+            max-h-[520px]
 
             pb-20
           "
@@ -531,7 +533,8 @@ const Process = () => {
                 <div
                   className="
                     grid
-                    grid-cols-2
+                    grid-cols-1
+                    lg:grid-cols-2
 
                     gap-8
                     lg:gap-12
@@ -974,9 +977,7 @@ const Process = () => {
           <p className="text-white/40 text-sm">
             Ready to build something that grows?
           </p>
-
-          <a
-            href="#contact"
+          <Link  href="/contact"
             className="
               inline-flex
 
@@ -993,10 +994,7 @@ const Process = () => {
               font-space-grotesk
 
               text-sm
-            "
-          >
-            Start a Project →
-          </a>
+            ">Start a Project →</Link>
 
         </div>
 
