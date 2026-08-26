@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
+import Preloader from "./Components/Preloader";
+import PromoPopup from "./Components/PromoPopup";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -17,15 +20,7 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
-/* =====================================================
-   SEO METADATA
-===================================================== */
-
 export const metadata: Metadata = {
-  /* ---------------------------------------------------
-     BASIC SEO
-  --------------------------------------------------- */
-
   metadataBase: new URL("https://nexgenbyte.com"),
 
   title: {
@@ -63,17 +58,9 @@ export const metadata: Metadata = {
   creator: "NexGenByte",
   publisher: "NexGenByte",
 
-  /* ---------------------------------------------------
-     CANONICAL
-  --------------------------------------------------- */
-
   alternates: {
     canonical: "/",
   },
-
-  /* ---------------------------------------------------
-     ROBOTS
-  --------------------------------------------------- */
 
   robots: {
     index: true,
@@ -88,17 +75,10 @@ export const metadata: Metadata = {
     },
   },
 
-  /* ---------------------------------------------------
-     OPEN GRAPH
-  --------------------------------------------------- */
-
   openGraph: {
     type: "website",
-
     locale: "en_US",
-
     url: "https://nexgenbyte.com",
-
     siteName: "NexGenByte",
 
     title: "NexGenByte | Web Development Agency",
@@ -116,10 +96,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  /* ---------------------------------------------------
-     TWITTER / X
-  --------------------------------------------------- */
-
   twitter: {
     card: "summary_large_image",
 
@@ -132,10 +108,6 @@ export const metadata: Metadata = {
 
     creator: "@NexGenByte",
   },
-
-  /* ---------------------------------------------------
-     ICONS
-  --------------------------------------------------- */
 
   icons: {
     icon: [
@@ -153,15 +125,7 @@ export const metadata: Metadata = {
     ],
   },
 
-  /* ---------------------------------------------------
-     MANIFEST
-  --------------------------------------------------- */
-
   manifest: "/manifest.json",
-
-  /* ---------------------------------------------------
-     OTHER
-  --------------------------------------------------- */
 
   category: "technology",
 
@@ -183,7 +147,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        
+        <Preloader />
+
         {children}
+
+        <PromoPopup />
+
       </body>
     </html>
   );

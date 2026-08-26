@@ -1,198 +1,367 @@
+"use client";
+
 import Image from "next/image";
-import React from "react";
+import Link from "next/link";
+import { FormEvent, useState } from "react";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
+  const handleNewsletterSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    setLoading(true);
+    setSuccess("");
+    setError("");
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Something went wrong."
+        );
+      }
+
+      setSuccess(
+        "You're subscribed! Check your inbox."
+      );
+
+      setEmail("");
+    } catch (error) {
+      console.error("Newsletter error:", error);
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to subscribe. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <footer className="w-full bg-text text-white">
 
       {/* ================= NEWSLETTER ================= */}
-      <div className="w-[90%] max-w-[1100px] mx-auto py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+
+      <div className="mx-auto grid w-[90%] max-w-[1100px] grid-cols-1 gap-10 py-10 md:grid-cols-2">
 
         {/* Newsletter Text */}
+
         <div>
-          <h2 className="font-space-grotesk text-2xl md:text-3xl font-semibold leading-tight max-w-[500px]">
+          <p className="mb-3 font-space-grotesk text-xs uppercase tracking-[0.2em] text-white/50">
+            NexGenByte Newsletter
+          </p>
+
+          <h2 className="max-w-[500px] font-space-grotesk text-2xl font-semibold leading-tight md:text-3xl">
             Get the latest tips for social media growth and marketing
             straight to your inbox!
           </h2>
+
+          <p className="mt-4 max-w-[470px] text-sm leading-6 text-white/50">
+            Get practical insights about web development, digital
+            marketing, website strategy and growing your online presence.
+          </p>
         </div>
 
+
         {/* Newsletter Form */}
+
         <div className="flex items-end">
-          <form className="w-full flex items-center border-b border-white/30 pb-4">
 
-            <input
-              type="email"
-              placeholder="john@example.com"
-              className="flex-1 bg-transparent outline-none text-white placeholder:text-white/90 font-space-grotesk text-lg"
-            />
+          <form
+            onSubmit={handleNewsletterSubmit}
+            className="w-full"
+          >
 
-            <button
-              type="submit"
-              className="text-sm font-space-grotesk hover:text-secondary transition-colors"
-            >
-              Subscribe Now
-              <span className="ml-2">➤</span>
-            </button>
+            <div className="flex items-center border-b border-white/30 pb-4">
+
+              <input
+                required
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                disabled={loading}
+                placeholder="john@example.com"
+                aria-label="Email address"
+                className="
+                  min-w-0
+                  flex-1
+                  bg-transparent
+                  font-space-grotesk
+                  text-lg
+                  text-white
+                  outline-none
+                  placeholder:text-white/40
+                  disabled:opacity-50
+                "
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="
+                  ml-4
+                  whitespace-nowrap
+                  font-space-grotesk
+                  text-sm
+                  transition-colors
+                  hover:text-secondary
+                  disabled:cursor-not-allowed
+                  disabled:opacity-50
+                "
+              >
+                {loading ? "Subscribing..." : "Subscribe Now"}
+
+                {!loading && (
+                  <span className="ml-2">
+                    →
+                  </span>
+                )}
+              </button>
+
+            </div>
+
+
+            {/* Success Message */}
+
+            {success && (
+              <p
+                role="status"
+                className="mt-4 font-space-grotesk text-sm text-green-400"
+              >
+                {success}
+              </p>
+            )}
+
+
+            {/* Error Message */}
+
+            {error && (
+              <p
+                role="alert"
+                className="mt-4 font-space-grotesk text-sm text-red-400"
+              >
+                {error}
+              </p>
+            )}
 
           </form>
+
         </div>
 
       </div>
 
 
       {/* ================= LINKS ================= */}
-      <div className="w-[90%] max-w-[1100px] mx-auto py-12 grid grid-cols-2 md:grid-cols-4 gap-10 border-t border-white/10">
+
+      <div className="mx-auto grid w-[90%] max-w-[1100px] grid-cols-2 gap-10 border-t border-white/10 py-12 md:grid-cols-4">
 
         {/* Site Map */}
+
         <div>
-          <h3 className="text-lg font-semibold mb-6 font-space-grotesk">
+          <h3 className="mb-6 font-space-grotesk text-lg font-semibold">
             Site Map
           </h3>
 
-          <ul className="space-y-3 text-sm text-white/80 font-space-grotesk">
+          <ul className="space-y-3 font-space-grotesk text-sm text-white/80">
+
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
+              <Link
+                href="/"
+                className="transition-colors hover:text-secondary"
+              >
                 Home
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
+              <Link
+                href="/#services"
+                className="transition-colors hover:text-secondary"
+              >
                 Services
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Pricing
-              </a>
+              <Link
+                href="/#about"
+                className="transition-colors hover:text-secondary"
+              >
+                About
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Blogs
-              </a>
+              <Link
+                href="/contact"
+                className="transition-colors hover:text-secondary"
+              >
+                Contact
+              </Link>
             </li>
 
-            <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Projects
-              </a>
-            </li>
           </ul>
         </div>
 
 
         {/* Support */}
+
         <div>
-          <h3 className="text-lg font-semibold mb-6 font-space-grotesk">
+          <h3 className="mb-6 font-space-grotesk text-lg font-semibold">
             Support
           </h3>
 
-          <ul className="space-y-3 text-sm text-white/80 font-space-grotesk">
+          <ul className="space-y-3 font-space-grotesk text-sm text-white/80">
+
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
+              <Link
+                href="/contact"
+                className="transition-colors hover:text-secondary"
+              >
                 Contact Us
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
+              <Link
+                href="/#about"
+                className="transition-colors hover:text-secondary"
+              >
                 About Us
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Team Member
-              </a>
+              <Link
+                href="/privacy"
+                className="transition-colors hover:text-secondary"
+              >
+                Privacy Policy
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Login Now
-              </a>
+              <Link
+                href="/terms"
+                className="transition-colors hover:text-secondary"
+              >
+                Terms & Conditions
+              </Link>
             </li>
 
-            <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Register Now
-              </a>
-            </li>
           </ul>
         </div>
 
 
-        {/* Utilities */}
+        {/* Services */}
+
         <div>
-          <h3 className="text-lg font-semibold mb-6 font-space-grotesk">
-            Utilities
+          <h3 className="mb-6 font-space-grotesk text-lg font-semibold">
+            Services
           </h3>
 
-          <ul className="space-y-3 text-sm text-white/80 font-space-grotesk">
+          <ul className="space-y-3 font-space-grotesk text-sm text-white/80">
+
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Licensing
-              </a>
+              <Link
+                href="/#services"
+                className="transition-colors hover:text-secondary"
+              >
+                Website Development
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Style Guide
-              </a>
+              <Link
+                href="/#services"
+                className="transition-colors hover:text-secondary"
+              >
+                Website Design
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Changelog
-              </a>
+              <Link
+                href="/#services"
+                className="transition-colors hover:text-secondary"
+              >
+                Landing Pages
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                Instructions
-              </a>
+              <Link
+                href="/#services"
+                className="transition-colors hover:text-secondary"
+              >
+                E-commerce
+              </Link>
             </li>
 
-            <li>
-              <a href="#" className="hover:text-secondary transition-colors">
-                404 Not Found
-              </a>
-            </li>
           </ul>
         </div>
 
 
         {/* Contact */}
+
         <div>
-          <h3 className="text-lg font-semibold mb-6 font-space-grotesk">
+          <h3 className="mb-6 font-space-grotesk text-lg font-semibold">
             Contact Us
           </h3>
 
-          <ul className="space-y-4 text-sm text-white/80 font-space-grotesk">
+          <ul className="space-y-4 font-space-grotesk text-sm text-white/80">
 
             <li className="flex gap-3">
+
               <span>☎</span>
+
               <a
                 href="tel:+923159711237"
-                className="hover:text-secondary transition-colors"
+                className="transition-colors hover:text-secondary"
               >
                 +92 315 9711237
               </a>
+
             </li>
 
+
             <li className="flex gap-3">
+
               <span>✉</span>
 
               <a
-                href="mailto:contact@nexgenbyte.com"
-                className="hover:text-secondary transition-colors"
+                href="mailto:hadi@nexgenbyte.com"
+                className="break-all transition-colors hover:text-secondary"
               >
-                Contact@nexgenbyte.com
+                hadi@nexgenbyte.com
               </a>
+
             </li>
 
+
             <li className="flex gap-3">
+
               <span>⌖</span>
 
               <span>
@@ -200,6 +369,7 @@ const Footer = () => {
                 <br />
                 Pakistan
               </span>
+
             </li>
 
           </ul>
@@ -209,77 +379,96 @@ const Footer = () => {
 
 
       {/* ================= BOTTOM BAR ================= */}
+
       <div className="border-t border-white/20">
 
-        <div className="w-[90%] max-w-[1100px] mx-auto py-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="mx-auto flex w-[90%] max-w-[1100px] flex-col items-center justify-between gap-6 py-8 md:flex-row">
 
           {/* Credits */}
-          <div className="text-sm font-space-grotesk text-white/80">
+
+          <div className="font-space-grotesk text-sm text-white/80">
+
             Designed & Developed by{" "}
-            <span className="text-secondary">
-              Nexgenbyte
-            </span>
+
+            <Link
+              href="/"
+              className="text-secondary transition-opacity hover:opacity-80"
+            >
+              NexGenByte
+            </Link>
+
           </div>
 
 
           {/* Socials */}
+
           <div className="flex items-center gap-5">
 
             <span className="font-space-grotesk font-semibold">
               Follow Us
             </span>
 
+
             {/* Facebook */}
+
             <a
               href="https://www.facebook.com/people/Nexgenbyte/61586008494111/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="Facebook"
-              className="hover:text-secondary transition-colors"
+              className="transition-colors hover:text-secondary"
             >
               f
             </a>
 
+
             {/* Instagram */}
+
             <a
               href="https://www.instagram.com/nexgenbyte1/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="Instagram"
-              className="hover:text-secondary transition-colors"
+              className="transition-colors hover:text-secondary"
             >
               ◎
             </a>
 
+
             {/* X */}
+
             <a
               href="https://x.com/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="X"
-              className="hover:text-secondary transition-colors"
+              className="transition-colors hover:text-secondary"
             >
               𝕏
             </a>
 
+
             {/* LinkedIn */}
+
             <a
-              href="https://www.linkedin.com/company/nexgenbyte/?lipi=urn%3Ali%3Apage%3Ad_flagship3_search_srp_all%3BClEAM4%2BlQ1yig39joAb3cg%3D%3D"
+              href="https://www.linkedin.com/company/nexgenbyte/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="LinkedIn"
-              className="hover:text-secondary transition-colors"
+              className="transition-colors hover:text-secondary"
             >
               in
             </a>
 
+
             {/* GitHub */}
+
             <a
               href="https://github.com/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="GitHub"
-              className="hover:text-secondary transition-colors"
+              className="transition-colors hover:text-secondary"
             >
               Git
             </a>
@@ -290,15 +479,16 @@ const Footer = () => {
 
 
         {/* ================= HUGE LOGO ================= */}
+
         <div className="w-full overflow-hidden opacity-25">
 
           <Image
             src="/footerlogo.png"
-            alt="Agency Logo"
+            alt="NexGenByte"
             width={1400}
             height={300}
-            quality={100}
-            className="w-full h-auto object-contain"
+            quality={75}
+            className="h-auto w-full object-contain"
           />
 
         </div>
