@@ -4,6 +4,7 @@ import "./globals.css";
 
 import Preloader from "./Components/Preloader";
 import PromoPopup from "./Components/PromoPopup";
+import AIChatbot from "./Components/AIChatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -153,6 +154,7 @@ export default function RootLayout({
         {children}
 
         <PromoPopup />
+        <AIChatbot />
 
       </body>
     </html>
