@@ -1,15 +1,19 @@
 "use client";
 
-import {
-  FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
+};
+
+type Appointment = {
+  name: string;
+  phone: string;
+  date: string;
+  time: string;
+  service: string;
+  message: string;
 };
 
 /* =====================================================
@@ -52,6 +56,7 @@ function SendIcon() {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <path
         d="M21 3L10.5 13.5"
@@ -80,6 +85,7 @@ function CloseIcon() {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <path
         d="M6 6L18 18M18 6L6 18"
@@ -99,6 +105,7 @@ function ArrowIcon() {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
     >
       <path
         d="M5 12H19"
@@ -124,26 +131,14 @@ function ArrowIcon() {
 
 function AssistantAvatar() {
   return (
-    <div
-      className="
-        flex
-        h-8
-        w-8
-        shrink-0
-        items-center
-        justify-center
-        rounded-xl
-        bg-text
-        text-background
-      "
-    >
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-text text-background">
       <ChatIcon size={17} />
     </div>
   );
 }
 
 /* =====================================================
-   TYPING
+   TYPING INDICATOR
 ===================================================== */
 
 function TypingIndicator() {
@@ -151,18 +146,7 @@ function TypingIndicator() {
     <div className="flex items-end gap-2">
       <AssistantAvatar />
 
-      <div
-        className="
-          flex
-          items-center
-          gap-1.5
-          rounded-2xl
-          rounded-bl-md
-          bg-black/[0.045]
-          px-4
-          py-3.5
-        "
-      >
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-black/[0.045] px-4 py-3.5">
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-text/40 [animation-delay:-0.3s]" />
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-text/40 [animation-delay:-0.15s]" />
         <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-text/40" />
@@ -186,13 +170,17 @@ export default function AIChatbot() {
 
   const [loading, setLoading] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [startingChat, setStartingChat] = useState(false);
+
   const [error, setError] = useState("");
 
   const [booking, setBooking] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  const [appointment, setAppointment] = useState({
+  const [showCloseWarning, setShowCloseWarning] = useState(false);
+
+  const [appointment, setAppointment] = useState<Appointment>({
     name: "",
     phone: "",
     date: "",
@@ -215,14 +203,19 @@ export default function AIChatbot() {
   }, [messages, loading]);
 
   /* =====================================================
-     ESCAPE
+     ESCAPE KEY
   ===================================================== */
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key !== "Escape") return;
+
+      if (!emailSubmitted) {
         setOpen(false);
+        return;
       }
+
+      setShowCloseWarning(true);
     };
 
     if (open) {
@@ -232,17 +225,20 @@ export default function AIChatbot() {
     return () => {
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [open]);
+  }, [open, emailSubmitted]);
 
   /* =====================================================
-     BODY SCROLL
+     BODY SCROLL LOCK ON MOBILE
   ===================================================== */
 
   useEffect(() => {
-    if (open && window.innerWidth < 640) {
-      document.body.style.overflow = "hidden";
-    } else {
+    if (!open) {
       document.body.style.overflow = "";
+      return;
+    }
+
+    if (window.innerWidth < 640) {
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
@@ -254,29 +250,62 @@ export default function AIChatbot() {
      START CHAT
   ===================================================== */
 
-  const startChat = (event: FormEvent) => {
+  const startChat = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const cleanEmail = email.trim();
 
-    if (!cleanEmail) return;
+    if (!cleanEmail || startingChat) return;
 
-    setEmail(cleanEmail);
-    setEmailSubmitted(true);
-    setBooking(false);
+    setStartingChat(true);
     setError("");
 
-    setMessages([
-      {
-        role: "assistant",
-        content:
-          "Hi! I'm here to help you with your website, SEO, lead generation, ecommerce, automation, or digital growth. What would you like to improve?",
-      },
-    ]);
+    try {
+      const response = await fetch("/api/chat/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: cleanEmail,
+        }),
+      });
 
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 150);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || "Unable to start conversation."
+        );
+      }
+
+      setEmail(cleanEmail);
+      setEmailSubmitted(true);
+      setBooking(false);
+      setBookingSuccess(false);
+
+      setMessages([
+        {
+          role: "assistant",
+          content:
+            "Hi! I'm here to help you with your website, SEO, lead generation, ecommerce, automation, or digital growth. What would you like to improve?",
+        },
+      ]);
+
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 150);
+    } catch (error) {
+      console.error("Start chat error:", error);
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to start conversation."
+      );
+    } finally {
+      setStartingChat(false);
+    }
   };
 
   /* =====================================================
@@ -286,7 +315,9 @@ export default function AIChatbot() {
   const sendMessage = async () => {
     const cleanMessage = message.trim();
 
-    if (!cleanMessage || loading || ending) return;
+    if (!cleanMessage || loading || ending || !emailSubmitted) {
+      return;
+    }
 
     const userMessage: Message = {
       role: "user",
@@ -303,11 +334,9 @@ export default function AIChatbot() {
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           email,
           messages: updatedMessages,
@@ -320,6 +349,10 @@ export default function AIChatbot() {
         throw new Error(
           result.message || "Unable to process your message."
         );
+      }
+
+      if (!result.reply) {
+        throw new Error("No response received from the assistant.");
       }
 
       setMessages([
@@ -347,7 +380,9 @@ export default function AIChatbot() {
   ===================================================== */
 
   const endChat = async () => {
-    if (ending || messages.length === 0) return;
+    if (ending || loading || messages.length === 0) {
+      return false;
+    }
 
     setEnding(true);
     setError("");
@@ -355,11 +390,9 @@ export default function AIChatbot() {
     try {
       const response = await fetch("/api/chat/end", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           email,
           messages,
@@ -374,14 +407,16 @@ export default function AIChatbot() {
         );
       }
 
-      setMessages([
-        ...messages,
+      setMessages((prev) => [
+        ...prev,
         {
           role: "assistant",
           content:
             "Thanks for reaching out to NexGenByte. We've received your enquiry. Our team will review your conversation and contact you within 24 hours.",
         },
       ]);
+
+      return true;
     } catch (error) {
       console.error("End chat error:", error);
 
@@ -390,6 +425,8 @@ export default function AIChatbot() {
           ? error.message
           : "Unable to submit conversation."
       );
+
+      return false;
     } finally {
       setEnding(false);
     }
@@ -399,8 +436,12 @@ export default function AIChatbot() {
      BOOK APPOINTMENT
   ===================================================== */
 
-  const bookAppointment = async (event: FormEvent) => {
+  const bookAppointment = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
+
+    if (bookingLoading) return;
 
     setBookingLoading(true);
     setError("");
@@ -408,19 +449,17 @@ export default function AIChatbot() {
     try {
       const response = await fetch("/api/appointment", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
-          name: appointment.name,
+          name: appointment.name.trim(),
           email,
-          phone: appointment.phone,
+          phone: appointment.phone.trim(),
           date: appointment.date,
           time: appointment.time,
           service: appointment.service,
-          message: appointment.message,
+          message: appointment.message.trim(),
         }),
       });
 
@@ -443,7 +482,7 @@ export default function AIChatbot() {
         },
       ]);
     } catch (error) {
-      console.error(error);
+      console.error("Appointment error:", error);
 
       setError(
         error instanceof Error
@@ -463,6 +502,37 @@ export default function AIChatbot() {
     setBooking(false);
     setBookingSuccess(false);
     setError("");
+  };
+
+  /* =====================================================
+     CLOSE CHAT
+  ===================================================== */
+
+  const handleCloseChat = () => {
+    if (!emailSubmitted) {
+      setOpen(false);
+      return;
+    }
+
+    if (ending) return;
+
+    setShowCloseWarning(true);
+  };
+
+  /* =====================================================
+     CONFIRM CLOSE
+  ===================================================== */
+
+  const confirmCloseChat = async () => {
+    if (ending) return;
+
+    setShowCloseWarning(false);
+
+    const success = await endChat();
+
+    if (success) {
+      setOpen(false);
+    }
   };
 
   /* =====================================================
@@ -499,12 +569,10 @@ export default function AIChatbot() {
             hover:-translate-y-1
             hover:scale-105
             active:scale-95
-
             sm:bottom-6
             sm:right-6
             sm:h-16
             sm:w-16
-
             lg:bottom-8
             lg:right-8
           "
@@ -516,41 +584,36 @@ export default function AIChatbot() {
       {/* =================================================
           CHAT WINDOW
       ================================================= */}
-{open && (
-  <div
-    className="
-      fixed
-      inset-0
-      z-[100]
-      flex
-      flex-col
-      overflow-hidden
-      bg-background
 
-      /* MOBILE */
-      sm:inset-auto
-      sm:bottom-5
-      sm:right-5
-      sm:h-[min(650px,calc(100vh-40px))]
-      sm:w-[390px]
-      sm:rounded-[22px]
-      sm:border
-      sm:border-text/10
-      sm:shadow-[0_20px_60px_rgba(0,0,0,0.20)]
-
-      /* DESKTOP */
-      lg:bottom-6
-      lg:right-6
-      lg:h-[620px]
-      lg:w-[390px]
-
-      /* LARGE DESKTOP */
-      xl:bottom-7
-      xl:right-7
-      xl:h-[620px]
-      xl:w-[400px]
-    "
-  >
+      {open && (
+        <div
+          className="
+            fixed
+            inset-0
+            z-[100]
+            flex
+            flex-col
+            overflow-hidden
+            bg-background
+            sm:inset-auto
+            sm:bottom-5
+            sm:right-5
+            sm:h-[min(650px,calc(100vh-40px))]
+            sm:w-[390px]
+            sm:rounded-[22px]
+            sm:border
+            sm:border-text/10
+            sm:shadow-[0_20px_60px_rgba(0,0,0,0.20)]
+            lg:bottom-6
+            lg:right-6
+            lg:h-[620px]
+            lg:w-[390px]
+            xl:bottom-7
+            xl:right-7
+            xl:h-[620px]
+            xl:w-[400px]
+          "
+        >
           {/* =================================================
               HEADER
           ================================================= */}
@@ -602,7 +665,7 @@ export default function AIChatbot() {
 
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={handleCloseChat}
               aria-label="Close chat"
               className="
                 flex
@@ -709,9 +772,10 @@ export default function AIChatbot() {
                     required
                     type="email"
                     value={email}
-                    onChange={(e) =>
-                      setEmail(e.target.value)
-                    }
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError("");
+                    }}
                     placeholder="you@company.com"
                     autoComplete="email"
                     className="
@@ -735,8 +799,26 @@ export default function AIChatbot() {
                   />
                 </div>
 
+                {error && (
+                  <p
+                    className="
+                      mt-3
+                      rounded-xl
+                      bg-red-500/5
+                      px-3
+                      py-2
+                      text-sm
+                      leading-5
+                      text-red-500
+                    "
+                  >
+                    {error}
+                  </p>
+                )}
+
                 <button
                   type="submit"
+                  disabled={startingChat}
                   className="
                     mt-4
                     flex
@@ -755,10 +837,15 @@ export default function AIChatbot() {
                     transition
                     hover:-translate-y-0.5
                     hover:shadow-xl
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
                   "
                 >
-                  Start conversation
-                  <ArrowIcon />
+                  {startingChat
+                    ? "Starting..."
+                    : "Start conversation"}
+
+                  {!startingChat && <ArrowIcon />}
                 </button>
 
                 <p
@@ -780,16 +867,8 @@ export default function AIChatbot() {
                BOOKING SCREEN
             ================================================= */
 
-            <div
-              className="
-                flex
-                min-h-0
-                flex-1
-                flex-col
-                overflow-hidden
-              "
-            >
-              {/* Booking top bar */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              {/* Booking Header */}
 
               <div
                 className="
@@ -809,7 +888,7 @@ export default function AIChatbot() {
                     Free Consultation
                   </p>
 
-                  <h2 className="mt-1 font-space-grotesk text-xl font-semibold">
+                  <h2 className="mt-1 font-space-grotesk text-xl font-semibold text-text">
                     Book a strategy call
                   </h2>
                 </div>
@@ -817,6 +896,7 @@ export default function AIChatbot() {
                 <button
                   type="button"
                   onClick={closeBooking}
+                  aria-label="Close booking"
                   className="
                     flex
                     h-8
@@ -834,7 +914,7 @@ export default function AIChatbot() {
                 </button>
               </div>
 
-              {/* Booking body */}
+              {/* Booking Body */}
 
               {bookingSuccess ? (
                 <div
@@ -863,7 +943,7 @@ export default function AIChatbot() {
                     ✓
                   </div>
 
-                  <h3 className="mt-5 font-space-grotesk text-2xl font-semibold">
+                  <h3 className="mt-5 font-space-grotesk text-2xl font-semibold text-text">
                     Request received
                   </h3>
 
@@ -901,6 +981,8 @@ export default function AIChatbot() {
                       lg:p-7
                     "
                   >
+                    {/* Name */}
+
                     <div>
                       <label className="mb-2 block text-xs font-medium text-text-secondary">
                         Name
@@ -912,10 +994,10 @@ export default function AIChatbot() {
                         placeholder="Your name"
                         value={appointment.name}
                         onChange={(e) =>
-                          setAppointment({
-                            ...appointment,
+                          setAppointment((prev) => ({
+                            ...prev,
                             name: e.target.value,
-                          })
+                          }))
                         }
                         className="
                           w-full
@@ -934,6 +1016,8 @@ export default function AIChatbot() {
                         "
                       />
                     </div>
+
+                    {/* Email */}
 
                     <div>
                       <label className="mb-2 block text-xs font-medium text-text-secondary">
@@ -958,20 +1042,23 @@ export default function AIChatbot() {
                       />
                     </div>
 
+                    {/* Phone */}
+
                     <div>
                       <label className="mb-2 block text-xs font-medium text-text-secondary">
                         Phone
                       </label>
 
                       <input
+                        required
                         type="tel"
                         placeholder="Phone number"
                         value={appointment.phone}
                         onChange={(e) =>
-                          setAppointment({
-                            ...appointment,
+                          setAppointment((prev) => ({
+                            ...prev,
                             phone: e.target.value,
-                          })
+                          }))
                         }
                         className="
                           w-full
@@ -999,12 +1086,15 @@ export default function AIChatbot() {
                         <input
                           required
                           type="date"
+                          min={new Date()
+                            .toISOString()
+                            .split("T")[0]}
                           value={appointment.date}
                           onChange={(e) =>
-                            setAppointment({
-                              ...appointment,
+                            setAppointment((prev) => ({
+                              ...prev,
                               date: e.target.value,
-                            })
+                            }))
                           }
                           className="
                             w-full
@@ -1032,10 +1122,10 @@ export default function AIChatbot() {
                           type="time"
                           value={appointment.time}
                           onChange={(e) =>
-                            setAppointment({
-                              ...appointment,
+                            setAppointment((prev) => ({
+                              ...prev,
                               time: e.target.value,
-                            })
+                            }))
                           }
                           className="
                             w-full
@@ -1064,10 +1154,10 @@ export default function AIChatbot() {
                       <select
                         value={appointment.service}
                         onChange={(e) =>
-                          setAppointment({
-                            ...appointment,
+                          setAppointment((prev) => ({
+                            ...prev,
                             service: e.target.value,
-                          })
+                          }))
                         }
                         className="
                           w-full
@@ -1094,7 +1184,7 @@ export default function AIChatbot() {
                       </select>
                     </div>
 
-                    {/* Message */}
+                    {/* Project Details */}
 
                     <div>
                       <label className="mb-2 block text-xs font-medium text-text-secondary">
@@ -1105,10 +1195,10 @@ export default function AIChatbot() {
                         placeholder="Tell us about your project..."
                         value={appointment.message}
                         onChange={(e) =>
-                          setAppointment({
-                            ...appointment,
+                          setAppointment((prev) => ({
+                            ...prev,
                             message: e.target.value,
-                          })
+                          }))
                         }
                         rows={4}
                         className="
@@ -1189,48 +1279,22 @@ export default function AIChatbot() {
                   {messages.map((item, index) => (
                     <div
                       key={`${index}-${item.role}`}
-                      className={`
-                        flex
-                        items-end
-                        gap-2
-                        ${
-                          item.role === "user"
-                            ? "justify-end"
-                            : "justify-start"
-                        }
-                      `}
+                      className={`flex items-end gap-2 ${
+                        item.role === "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
                     >
                       {item.role === "assistant" && (
                         <AssistantAvatar />
                       )}
 
                       <div
-                        className={`
-                          max-w-[82%]
-                          px-4
-                          py-3
-                          text-[13px]
-                          leading-6
-                          shadow-sm
-                          sm:max-w-[78%]
-                          lg:max-w-[76%]
-
-                          ${
-                            item.role === "user"
-                              ? `
-                                rounded-2xl
-                                rounded-br-md
-                                bg-text
-                                text-background
-                              `
-                              : `
-                                rounded-2xl
-                                rounded-bl-md
-                                bg-black/[0.045]
-                                text-text
-                              `
-                          }
-                        `}
+                        className={`max-w-[82%] px-4 py-3 text-[13px] leading-6 shadow-sm sm:max-w-[78%] lg:max-w-[76%] ${
+                          item.role === "user"
+                            ? "rounded-2xl rounded-br-md bg-text text-background"
+                            : "rounded-2xl rounded-bl-md bg-black/[0.045] text-text"
+                        }`}
                       >
                         {item.content}
                       </div>
@@ -1262,7 +1326,7 @@ export default function AIChatbot() {
               </div>
 
               {/* =================================================
-                  INPUT
+                  INPUT AREA
               ================================================= */}
 
               <div
@@ -1288,6 +1352,7 @@ export default function AIChatbot() {
                     setBooking(true);
                     setError("");
                   }}
+                  disabled={loading || ending}
                   className="
                     mb-3
                     inline-flex
@@ -1303,6 +1368,8 @@ export default function AIChatbot() {
                     transition
                     hover:border-secondary
                     hover:text-secondary
+                    disabled:cursor-not-allowed
+                    disabled:opacity-50
                   "
                 >
                   Book a free strategy call
@@ -1331,9 +1398,10 @@ export default function AIChatbot() {
                   <input
                     ref={inputRef}
                     value={message}
-                    onChange={(e) =>
-                      setMessage(e.target.value)
-                    }
+                    onChange={(e) => {
+                      setMessage(e.target.value);
+                      if (error) setError("");
+                    }}
                     onKeyDown={(e) => {
                       if (
                         e.key === "Enter" &&
@@ -1389,7 +1457,7 @@ export default function AIChatbot() {
                   </button>
                 </div>
 
-                {/* Bottom actions */}
+                {/* Bottom Actions */}
 
                 <div className="mt-2 flex items-center justify-between px-1">
                   <span className="text-[10px] text-text-secondary/50">
@@ -1398,7 +1466,9 @@ export default function AIChatbot() {
 
                   <button
                     type="button"
-                    onClick={endChat}
+                    onClick={async () => {
+                      await endChat();
+                    }}
                     disabled={ending || loading}
                     className="
                       text-[11px]
@@ -1418,6 +1488,131 @@ export default function AIChatbot() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* =================================================
+          CLOSE WARNING MODAL
+      ================================================= */}
+
+      {showCloseWarning && (
+        <div
+          className="
+            fixed
+            inset-0
+            z-[200]
+            flex
+            items-center
+            justify-center
+            bg-black/40
+            px-5
+            backdrop-blur-sm
+          "
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="close-chat-title"
+        >
+          <div
+            className="
+              w-full
+              max-w-sm
+              rounded-2xl
+              bg-background
+              p-6
+              shadow-2xl
+            "
+          >
+            <div
+              className="
+                flex
+                h-11
+                w-11
+                items-center
+                justify-center
+                rounded-full
+                bg-black/[0.05]
+                text-text
+              "
+            >
+              <CloseIcon />
+            </div>
+
+            <h3
+              id="close-chat-title"
+              className="
+                mt-5
+                font-space-grotesk
+                text-xl
+                font-semibold
+                text-text
+              "
+            >
+              End this conversation?
+            </h3>
+
+            <p
+              className="
+                mt-2
+                text-sm
+                leading-6
+                text-text-secondary
+              "
+            >
+              If you close the chat, your conversation will
+              be submitted to our team and we may contact
+              you at your email address.
+            </p>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setShowCloseWarning(false)
+                }
+                disabled={ending}
+                className="
+                  flex-1
+                  rounded-xl
+                  border
+                  border-text/10
+                  px-4
+                  py-3
+                  text-sm
+                  font-medium
+                  text-text
+                  transition
+                  hover:bg-black/[0.04]
+                  disabled:opacity-50
+                "
+              >
+                Continue chatting
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmCloseChat}
+                disabled={ending}
+                className="
+                  flex-1
+                  rounded-xl
+                  bg-text
+                  px-4
+                  py-3
+                  text-sm
+                  font-medium
+                  text-background
+                  transition
+                  hover:-translate-y-0.5
+                  disabled:cursor-not-allowed
+                  disabled:opacity-50
+                "
+              >
+                {ending
+                  ? "Ending..."
+                  : "End conversation"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

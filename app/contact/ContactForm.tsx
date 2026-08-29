@@ -7,7 +7,21 @@ export default function ContactForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const [projectType, setProjectType] = useState("");
+
+  const [aiServices, setAiServices] = useState<string[]>([]);
+
+  const handleAiServiceChange = (service: string) => {
+    setAiServices((prev) =>
+      prev.includes(service)
+        ? prev.filter((item) => item !== service)
+        : [...prev, service]
+    );
+  };
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
     const formElement = event.currentTarget;
@@ -23,27 +37,54 @@ export default function ContactForm() {
       email: String(form.get("email") || ""),
       company: String(form.get("company") || ""),
 
-      projectType: String(form.get("projectType") || ""),
-      projectStatus: String(form.get("projectStatus") || ""),
-      website: String(form.get("website") || ""),
+      projectType,
 
-      pages: String(form.get("pages") || ""),
-      features: String(form.get("features") || ""),
-      targetAudience: String(form.get("targetAudience") || ""),
+      // Only relevant for website projects
+      projectStatus:
+        projectType === "AI Integration"
+          ? ""
+          : String(form.get("projectStatus") || ""),
+
+      website:
+        projectType === "AI Integration"
+          ? ""
+          : String(form.get("website") || ""),
+
+      pages:
+        projectType === "AI Integration"
+          ? ""
+          : String(form.get("pages") || ""),
+
+      features:
+        projectType === "AI Integration"
+          ? aiServices.join(", ")
+          : String(form.get("features") || ""),
+
+      targetAudience: String(
+        form.get("targetAudience") || ""
+      ),
+
       goals: String(form.get("goals") || ""),
 
       timeline: String(form.get("timeline") || ""),
       referral: String(form.get("referral") || ""),
 
       message: String(form.get("message") || ""),
+
+      aiServices:
+        projectType === "AI Integration"
+          ? aiServices
+          : [],
     };
 
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(data),
       });
 
@@ -56,8 +97,11 @@ export default function ContactForm() {
       }
 
       setSubmitted(true);
-      formElement.reset();
 
+      setAiServices([]);
+      setProjectType("");
+
+      formElement.reset();
     } catch (error) {
       console.error(error);
 
@@ -101,9 +145,13 @@ export default function ContactForm() {
     focus:border-secondary
   `;
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+  const isAiProject = projectType === "AI Integration";
 
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-8"
+    >
       {/* ================= BASIC INFO ================= */}
 
       <div>
@@ -117,7 +165,6 @@ export default function ContactForm() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
-
         <label className="font-space-grotesk text-sm text-text-secondary">
           Name *
 
@@ -143,7 +190,6 @@ export default function ContactForm() {
             placeholder="you@company.com"
           />
         </label>
-
       </div>
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
@@ -161,7 +207,6 @@ export default function ContactForm() {
       {/* ================= PROJECT ================= */}
 
       <div className="pt-4">
-
         <h3 className="font-space-grotesk text-xl font-semibold text-text">
           About your project
         </h3>
@@ -169,154 +214,250 @@ export default function ContactForm() {
         <p className="mt-1 text-sm text-text-secondary/60">
           The more we know, the better we can understand your needs.
         </p>
-
       </div>
 
-      {/* PROJECT TYPE + STATUS */}
-
-      <div className="grid gap-6 sm:grid-cols-2">
-
-        <label className="font-space-grotesk text-sm text-text-secondary">
-          What do you need? *
-
-          <select
-            required
-            name="projectType"
-            className={selectClass}
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Select project type
-            </option>
-
-            <option value="New Website">
-              New Website
-            </option>
-
-            <option value="Website Redesign">
-              Website Redesign
-            </option>
-
-            <option value="Landing Page">
-              Landing Page
-            </option>
-
-            <option value="E-commerce Website">
-              E-commerce Website
-            </option>
-
-            <option value="Web Application">
-              Web Application
-            </option>
-
-            <option value="Other">
-              Other
-            </option>
-          </select>
-        </label>
-
-        <label className="font-space-grotesk text-sm text-text-secondary">
-          Current project status
-
-          <select
-            name="projectStatus"
-            className={selectClass}
-            defaultValue=""
-          >
-            <option value="">
-              Select status
-            </option>
-
-            <option value="Just an idea">
-              Just an idea
-            </option>
-
-            <option value="Planning">
-              Planning
-            </option>
-
-            <option value="Design ready">
-              Design ready
-            </option>
-
-            <option value="Already have a website">
-              Already have a website
-            </option>
-
-            <option value="Need redesign">
-              Need redesign
-            </option>
-          </select>
-        </label>
-
-      </div>
-
-      {/* CURRENT WEBSITE - OPTIONAL */}
+      {/* ================= PROJECT TYPE ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
-        Current website
-        <span className="ml-2 text-xs text-text-secondary/50">
-          Optional
-        </span>
-
-        <input
-          name="website"
-          type="url"
-          className={inputClass}
-          placeholder="https://yourwebsite.com"
-        />
-      </label>
-
-      {/* PAGES */}
-
-      <label className="block font-space-grotesk text-sm text-text-secondary">
-        Approximately how many pages do you need?
+        What do you need? *
 
         <select
-          name="pages"
+          required
+          name="projectType"
+          value={projectType}
+          onChange={(e) => {
+            setProjectType(e.target.value);
+            setAiServices([]);
+          }}
           className={selectClass}
-          defaultValue=""
         >
-          <option value="">
-            Select number of pages
+          <option value="" disabled>
+            Select project type
           </option>
 
-          <option value="1-3 pages">
-            1–3 pages
+          <option value="New Website">
+            New Website
           </option>
 
-          <option value="4-6 pages">
-            4–6 pages
+          <option value="Website Redesign">
+            Website Redesign
           </option>
 
-          <option value="7-10 pages">
-            7–10 pages
+          <option value="Landing Page">
+            Landing Page
           </option>
 
-          <option value="10+ pages">
-            10+ pages
+          <option value="E-commerce Website">
+            E-commerce Website
           </option>
 
-          <option value="Not sure">
-            Not sure
+          <option value="Web Application">
+            Web Application
+          </option>
+
+          <option value="AI Integration">
+            AI Integrations
+          </option>
+
+          <option value="SEO Services">
+            SEO Services
+          </option>
+
+          <option value="Other">
+            Other
           </option>
         </select>
       </label>
 
-      {/* FEATURES */}
+      {/* =====================================================
+          AI SERVICES
+      ===================================================== */}
 
-      <label className="block font-space-grotesk text-sm text-text-secondary">
-        What features do you need?
+      {isAiProject && (
+        <div className="rounded-2xl border border-text/10 bg-black/[0.02] p-5 sm:p-6">
 
-        <textarea
-          name="features"
-          rows={4}
-          className={inputClass}
-          placeholder="For example: CMS, online payments, booking system, dashboard, animations, contact forms, user accounts..."
-        />
-      </label>
+          <div>
+            <h4 className="font-space-grotesk text-base font-semibold text-text">
+              What would you like to automate?
+            </h4>
 
-      {/* TARGET AUDIENCE */}
+            <p className="mt-1 text-sm leading-6 text-text-secondary/60">
+              Select all AI services that are relevant to your business.
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+
+            {[
+              "AI Chatbot for Website",
+              "WhatsApp Automation",
+              "Email Automation",
+              "AI Lead Generation",
+              "AI Customer Support",
+              "AI Voice Agent",
+              "AI Sales Assistant",
+              "Custom AI Integration",
+            ].map((service) => (
+              <label
+                key={service}
+                className={`
+                  flex
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-xl
+                  border
+                  p-3.5
+                  text-sm
+                  transition-all
+                  ${
+                    aiServices.includes(service)
+                      ? "border-secondary bg-secondary/5"
+                      : "border-text/10 hover:border-text/20"
+                  }
+                `}
+              >
+                <input
+                  type="checkbox"
+                  checked={aiServices.includes(service)}
+                  onChange={() =>
+                    handleAiServiceChange(service)
+                  }
+                  className="
+                    h-4
+                    w-4
+                    accent-secondary
+                  "
+                />
+
+                <span className="text-text">
+                  {service}
+                </span>
+              </label>
+            ))}
+          </div>
+
+          {aiServices.length === 0 && (
+            <p className="mt-3 text-xs text-text-secondary/50">
+              Choose at least one service.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* =====================================================
+          WEBSITE-ONLY QUESTIONS
+      ===================================================== */}
+
+      {!isAiProject && (
+        <>
+          {/* PROJECT STATUS */}
+
+          <label className="block font-space-grotesk text-sm text-text-secondary">
+            Current project status
+
+            <select
+              name="projectStatus"
+              className={selectClass}
+              defaultValue=""
+            >
+              <option value="">
+                Select status
+              </option>
+
+              <option value="Just an idea">
+                Just an idea
+              </option>
+
+              <option value="Planning">
+                Planning
+              </option>
+
+              <option value="Design ready">
+                Design ready
+              </option>
+
+              <option value="Already have a website">
+                Already have a website
+              </option>
+
+              <option value="Need redesign">
+                Need redesign
+              </option>
+            </select>
+          </label>
+
+          {/* CURRENT WEBSITE */}
+
+          <label className="block font-space-grotesk text-sm text-text-secondary">
+            Current website
+
+            <span className="ml-2 text-xs text-text-secondary/50">
+              Optional
+            </span>
+
+            <input
+              name="website"
+              type="url"
+              className={inputClass}
+              placeholder="https://yourwebsite.com"
+            />
+          </label>
+
+          {/* PAGES */}
+
+          <label className="block font-space-grotesk text-sm text-text-secondary">
+            Approximately how many pages do you need?
+
+            <select
+              name="pages"
+              className={selectClass}
+              defaultValue=""
+            >
+              <option value="">
+                Select number of pages
+              </option>
+
+              <option value="1-3 pages">
+                1–3 pages
+              </option>
+
+              <option value="4-6 pages">
+                4–6 pages
+              </option>
+
+              <option value="7-10 pages">
+                7–10 pages
+              </option>
+
+              <option value="10+ pages">
+                10+ pages
+              </option>
+
+              <option value="Not sure">
+                Not sure
+              </option>
+            </select>
+          </label>
+
+          {/* FEATURES */}
+
+          <label className="block font-space-grotesk text-sm text-text-secondary">
+            What features do you need?
+
+            <textarea
+              name="features"
+              rows={4}
+              className={inputClass}
+              placeholder="For example: CMS, online payments, booking system, dashboard, animations, contact forms..."
+            />
+          </label>
+        </>
+      )}
+
+      {/* =====================================================
+          TARGET AUDIENCE
+      ===================================================== */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
         Who is your target audience?
@@ -325,11 +466,17 @@ export default function ContactForm() {
           name="targetAudience"
           rows={3}
           className={inputClass}
-          placeholder="Tell us who your customers or users are."
+          placeholder={
+            isAiProject
+              ? "Who will use the AI system? For example: customers, leads, employees..."
+              : "Tell us who your customers or users are."
+          }
         />
       </label>
 
-      {/* GOALS */}
+      {/* =====================================================
+          GOALS
+      ===================================================== */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
         What are your main goals?
@@ -338,11 +485,17 @@ export default function ContactForm() {
           name="goals"
           rows={4}
           className={inputClass}
-          placeholder="For example: generate leads, increase sales, improve credibility, launch a new service..."
+          placeholder={
+            isAiProject
+              ? "For example: automate customer support, capture leads, save staff time, automate follow-ups..."
+              : "For example: generate leads, increase sales, improve credibility, launch a new service..."
+          }
         />
       </label>
 
-      {/* TIMELINE */}
+      {/* =====================================================
+          TIMELINE
+      ===================================================== */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
         Desired timeline
@@ -378,26 +531,33 @@ export default function ContactForm() {
         </select>
       </label>
 
-      {/* MESSAGE */}
+      {/* =====================================================
+          MESSAGE
+      ===================================================== */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
-
-        Tell us about your project *
+        {isAiProject
+          ? "Tell us about the automation you need *"
+          : "Tell us about your project *"}
 
         <textarea
           required
           name="message"
           rows={6}
           className={inputClass}
-          placeholder="Tell us what you're looking to build, the problem you're trying to solve, and anything else we should know..."
+          placeholder={
+            isAiProject
+              ? "Tell us what you want to automate, how your current process works, and what you'd like the AI system to accomplish..."
+              : "Tell us what you're looking to build, the problem you're trying to solve, and anything else we should know..."
+          }
         />
-
       </label>
 
-      {/* REFERRAL */}
+      {/* =====================================================
+          REFERRAL
+      ===================================================== */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
-
         How did you hear about NexGenByte?
 
         <select
@@ -429,16 +589,20 @@ export default function ContactForm() {
             Other
           </option>
         </select>
-
       </label>
 
-      {/* SUBMIT */}
+      {/* =====================================================
+          SUBMIT
+      ===================================================== */}
 
       <div className="flex flex-wrap items-center gap-5 pt-2">
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={
+            loading ||
+            (isAiProject && aiServices.length === 0)
+          }
           className="
             rounded-md
             bg-text
@@ -454,7 +618,11 @@ export default function ContactForm() {
             disabled:opacity-60
           "
         >
-          {loading ? "Sending..." : "Send enquiry"}
+          {loading
+            ? "Sending..."
+            : isAiProject
+              ? "Request AI Consultation"
+              : "Send enquiry"}
         </button>
 
         {submitted && (
@@ -470,7 +638,6 @@ export default function ContactForm() {
         )}
 
       </div>
-
     </form>
   );
 }
