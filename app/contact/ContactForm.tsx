@@ -1,14 +1,15 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const [projectType, setProjectType] = useState("");
-
   const [aiServices, setAiServices] = useState<string[]>([]);
 
   const handleAiServiceChange = (service: string) => {
@@ -24,13 +25,34 @@ export default function ContactForm() {
   ) => {
     event.preventDefault();
 
-    const formElement = event.currentTarget;
-
-    setLoading(true);
     setSubmitted(false);
     setError("");
 
+    // Turnstile check
+    if (!turnstileToken) {
+      setError("Please complete the security verification.");
+      return;
+    }
+
+    // AI project validation
+    if (
+      projectType === "AI Integration" &&
+      aiServices.length === 0
+    ) {
+      setError("Please select at least one AI service.");
+      return;
+    }
+
+    const formElement = event.currentTarget;
+
+    setLoading(true);
+
     const form = new FormData(formElement);
+
+    // Honeypot
+    const websiteCheck = String(
+      form.get("websiteCheck") || ""
+    );
 
     const data = {
       name: String(form.get("name") || ""),
@@ -39,7 +61,6 @@ export default function ContactForm() {
 
       projectType,
 
-      // Only relevant for website projects
       projectStatus:
         projectType === "AI Integration"
           ? ""
@@ -64,27 +85,38 @@ export default function ContactForm() {
         form.get("targetAudience") || ""
       ),
 
-      goals: String(form.get("goals") || ""),
+      goals: String(
+        form.get("goals") || ""
+      ),
 
-      timeline: String(form.get("timeline") || ""),
-      referral: String(form.get("referral") || ""),
+      timeline: String(
+        form.get("timeline") || ""
+      ),
 
-      message: String(form.get("message") || ""),
+      referral: String(
+        form.get("referral") || ""
+      ),
+
+      message: String(
+        form.get("message") || ""
+      ),
 
       aiServices:
         projectType === "AI Integration"
           ? aiServices
           : [],
+
+      // Security
+      turnstileToken,
+      websiteCheck,
     };
 
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(data),
       });
 
@@ -97,19 +129,25 @@ export default function ContactForm() {
       }
 
       setSubmitted(true);
+      setError("");
 
+      // Reset states
       setAiServices([]);
       setProjectType("");
+      setTurnstileToken("");
 
+      // Reset form fields
       formElement.reset();
+
     } catch (error) {
-      console.error(error);
+      console.error("Contact form error:", error);
 
       setError(
         error instanceof Error
           ? error.message
           : "Something went wrong. Please try again."
       );
+
     } finally {
       setLoading(false);
     }
@@ -145,13 +183,34 @@ export default function ContactForm() {
     focus:border-secondary
   `;
 
-  const isAiProject = projectType === "AI Integration";
+  const isAiProject =
+    projectType === "AI Integration";
 
   return (
     <form
       onSubmit={handleSubmit}
       className="space-y-8"
     >
+
+      {/* ================= HONEYPOT ================= */}
+
+      <div
+        className="absolute -left-[9999px]"
+        aria-hidden="true"
+      >
+        <label htmlFor="websiteCheck">
+          Website
+        </label>
+
+        <input
+          id="websiteCheck"
+          name="websiteCheck"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       {/* ================= BASIC INFO ================= */}
 
       <div>
@@ -165,6 +224,7 @@ export default function ContactForm() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
+
         <label className="font-space-grotesk text-sm text-text-secondary">
           Name *
 
@@ -190,6 +250,7 @@ export default function ContactForm() {
             placeholder="you@company.com"
           />
         </label>
+
       </div>
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
@@ -207,6 +268,7 @@ export default function ContactForm() {
       {/* ================= PROJECT ================= */}
 
       <div className="pt-4">
+
         <h3 className="font-space-grotesk text-xl font-semibold text-text">
           About your project
         </h3>
@@ -214,11 +276,13 @@ export default function ContactForm() {
         <p className="mt-1 text-sm text-text-secondary/60">
           The more we know, the better we can understand your needs.
         </p>
+
       </div>
 
       {/* ================= PROJECT TYPE ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
+
         What do you need? *
 
         <select
@@ -231,6 +295,7 @@ export default function ContactForm() {
           }}
           className={selectClass}
         >
+
           <option value="" disabled>
             Select project type
           </option>
@@ -266,17 +331,18 @@ export default function ContactForm() {
           <option value="Other">
             Other
           </option>
+
         </select>
+
       </label>
 
-      {/* =====================================================
-          AI SERVICES
-      ===================================================== */}
+      {/* ================= AI SERVICES ================= */}
 
       {isAiProject && (
         <div className="rounded-2xl border border-text/10 bg-black/[0.02] p-5 sm:p-6">
 
           <div>
+
             <h4 className="font-space-grotesk text-base font-semibold text-text">
               What would you like to automate?
             </h4>
@@ -284,6 +350,7 @@ export default function ContactForm() {
             <p className="mt-1 text-sm leading-6 text-text-secondary/60">
               Select all AI services that are relevant to your business.
             </p>
+
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -298,6 +365,7 @@ export default function ContactForm() {
               "AI Sales Assistant",
               "Custom AI Integration",
             ].map((service) => (
+
               <label
                 key={service}
                 className={`
@@ -317,24 +385,24 @@ export default function ContactForm() {
                   }
                 `}
               >
+
                 <input
                   type="checkbox"
                   checked={aiServices.includes(service)}
                   onChange={() =>
                     handleAiServiceChange(service)
                   }
-                  className="
-                    h-4
-                    w-4
-                    accent-secondary
-                  "
+                  className="h-4 w-4 accent-secondary"
                 />
 
                 <span className="text-text">
                   {service}
                 </span>
+
               </label>
+
             ))}
+
           </div>
 
           {aiServices.length === 0 && (
@@ -342,18 +410,18 @@ export default function ContactForm() {
               Choose at least one service.
             </p>
           )}
+
         </div>
       )}
 
-      {/* =====================================================
-          WEBSITE-ONLY QUESTIONS
-      ===================================================== */}
+      {/* ================= WEBSITE QUESTIONS ================= */}
 
       {!isAiProject && (
         <>
           {/* PROJECT STATUS */}
 
           <label className="block font-space-grotesk text-sm text-text-secondary">
+
             Current project status
 
             <select
@@ -361,6 +429,7 @@ export default function ContactForm() {
               className={selectClass}
               defaultValue=""
             >
+
               <option value="">
                 Select status
               </option>
@@ -384,12 +453,15 @@ export default function ContactForm() {
               <option value="Need redesign">
                 Need redesign
               </option>
+
             </select>
+
           </label>
 
           {/* CURRENT WEBSITE */}
 
           <label className="block font-space-grotesk text-sm text-text-secondary">
+
             Current website
 
             <span className="ml-2 text-xs text-text-secondary/50">
@@ -402,11 +474,13 @@ export default function ContactForm() {
               className={inputClass}
               placeholder="https://yourwebsite.com"
             />
+
           </label>
 
           {/* PAGES */}
 
           <label className="block font-space-grotesk text-sm text-text-secondary">
+
             Approximately how many pages do you need?
 
             <select
@@ -414,6 +488,7 @@ export default function ContactForm() {
               className={selectClass}
               defaultValue=""
             >
+
               <option value="">
                 Select number of pages
               </option>
@@ -437,12 +512,15 @@ export default function ContactForm() {
               <option value="Not sure">
                 Not sure
               </option>
+
             </select>
+
           </label>
 
           {/* FEATURES */}
 
           <label className="block font-space-grotesk text-sm text-text-secondary">
+
             What features do you need?
 
             <textarea
@@ -451,15 +529,16 @@ export default function ContactForm() {
               className={inputClass}
               placeholder="For example: CMS, online payments, booking system, dashboard, animations, contact forms..."
             />
+
           </label>
+
         </>
       )}
 
-      {/* =====================================================
-          TARGET AUDIENCE
-      ===================================================== */}
+      {/* ================= TARGET AUDIENCE ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
+
         Who is your target audience?
 
         <textarea
@@ -472,13 +551,13 @@ export default function ContactForm() {
               : "Tell us who your customers or users are."
           }
         />
+
       </label>
 
-      {/* =====================================================
-          GOALS
-      ===================================================== */}
+      {/* ================= GOALS ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
+
         What are your main goals?
 
         <textarea
@@ -491,13 +570,13 @@ export default function ContactForm() {
               : "For example: generate leads, increase sales, improve credibility, launch a new service..."
           }
         />
+
       </label>
 
-      {/* =====================================================
-          TIMELINE
-      ===================================================== */}
+      {/* ================= TIMELINE ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
+
         Desired timeline
 
         <select
@@ -505,6 +584,7 @@ export default function ContactForm() {
           className={selectClass}
           defaultValue=""
         >
+
           <option value="">
             Select timeline
           </option>
@@ -528,14 +608,15 @@ export default function ContactForm() {
           <option value="Flexible">
             Flexible
           </option>
+
         </select>
+
       </label>
 
-      {/* =====================================================
-          MESSAGE
-      ===================================================== */}
+      {/* ================= MESSAGE ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
+
         {isAiProject
           ? "Tell us about the automation you need *"
           : "Tell us about your project *"}
@@ -551,13 +632,13 @@ export default function ContactForm() {
               : "Tell us what you're looking to build, the problem you're trying to solve, and anything else we should know..."
           }
         />
+
       </label>
 
-      {/* =====================================================
-          REFERRAL
-      ===================================================== */}
+      {/* ================= REFERRAL ================= */}
 
       <label className="block font-space-grotesk text-sm text-text-secondary">
+
         How did you hear about NexGenByte?
 
         <select
@@ -565,6 +646,7 @@ export default function ContactForm() {
           className={selectClass}
           defaultValue=""
         >
+
           <option value="">
             Select an option
           </option>
@@ -588,12 +670,41 @@ export default function ContactForm() {
           <option value="Other">
             Other
           </option>
+
         </select>
+
       </label>
 
-      {/* =====================================================
-          SUBMIT
-      ===================================================== */}
+      {/* ================= TURNSTILE ================= */}
+
+      <div className="pt-2">
+
+        <Turnstile
+          siteKey={
+            process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""
+          }
+
+          onSuccess={(token) => {
+            setTurnstileToken(token);
+            setError("");
+          }}
+
+          onExpire={() => {
+            setTurnstileToken("");
+          }}
+
+          onError={() => {
+            setTurnstileToken("");
+
+            setError(
+              "Security verification failed. Please try again."
+            );
+          }}
+        />
+
+      </div>
+
+      {/* ================= SUBMIT ================= */}
 
       <div className="flex flex-wrap items-center gap-5 pt-2">
 
@@ -601,8 +712,10 @@ export default function ContactForm() {
           type="submit"
           disabled={
             loading ||
+            !turnstileToken ||
             (isAiProject && aiServices.length === 0)
           }
+
           className="
             rounded-md
             bg-text
@@ -618,11 +731,13 @@ export default function ContactForm() {
             disabled:opacity-60
           "
         >
+
           {loading
             ? "Sending..."
             : isAiProject
               ? "Request AI Consultation"
               : "Send enquiry"}
+
         </button>
 
         {submitted && (
@@ -638,6 +753,7 @@ export default function ContactForm() {
         )}
 
       </div>
+
     </form>
   );
 }

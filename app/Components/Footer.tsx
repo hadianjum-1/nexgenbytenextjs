@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { FormEvent, useState } from "react";
 
 const Footer = () => {
@@ -9,24 +10,44 @@ const Footer = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleNewsletterSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
-    setLoading(true);
     setSuccess("");
     setError("");
+
+    // Turnstile validation
+    if (!turnstileToken) {
+      setError("Please complete the security verification.");
+      return;
+    }
+
+    setLoading(true);
+
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+
+    // Honeypot
+    const websiteCheck = String(
+      form.get("websiteCheck") || ""
+    );
 
     try {
       const response = await fetch("/api/newsletter", {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
-          email,
+          email: email.trim(),
+          turnstileToken,
+          websiteCheck,
         }),
       });
 
@@ -43,14 +64,22 @@ const Footer = () => {
       );
 
       setEmail("");
+      setTurnstileToken("");
+
+      formElement.reset();
+
     } catch (error) {
-      console.error("Newsletter error:", error);
+      console.error(
+        "Newsletter error:",
+        error
+      );
 
       setError(
         error instanceof Error
           ? error.message
           : "Unable to subscribe. Please try again."
       );
+
     } finally {
       setLoading(false);
     }
@@ -81,7 +110,6 @@ const Footer = () => {
           </p>
         </div>
 
-
         {/* Newsletter Form */}
 
         <div className="flex items-end">
@@ -91,11 +119,33 @@ const Footer = () => {
             className="w-full"
           >
 
+            {/* ================= HONEYPOT ================= */}
+
+            <div
+              className="absolute -left-[9999px]"
+              aria-hidden="true"
+            >
+              <label htmlFor="websiteCheck">
+                Website
+              </label>
+
+              <input
+                id="websiteCheck"
+                name="websiteCheck"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
+
+            {/* ================= EMAIL ================= */}
+
             <div className="flex items-center border-b border-white/30 pb-4">
 
               <input
                 required
                 type="email"
+                name="email"
                 value={email}
                 onChange={(event) =>
                   setEmail(event.target.value)
@@ -103,6 +153,7 @@ const Footer = () => {
                 disabled={loading}
                 placeholder="john@example.com"
                 aria-label="Email address"
+                autoComplete="email"
                 className="
                   min-w-0
                   flex-1
@@ -118,7 +169,10 @@ const Footer = () => {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={
+                  loading ||
+                  !turnstileToken
+                }
                 className="
                   ml-4
                   whitespace-nowrap
@@ -130,7 +184,9 @@ const Footer = () => {
                   disabled:opacity-50
                 "
               >
-                {loading ? "Subscribing..." : "Subscribe Now"}
+                {loading
+                  ? "Subscribing..."
+                  : "Subscribe Now"}
 
                 {!loading && (
                   <span className="ml-2">
@@ -141,8 +197,37 @@ const Footer = () => {
 
             </div>
 
+            {/* ================= TURNSTILE ================= */}
 
-            {/* Success Message */}
+            <div className="mt-5">
+
+              <Turnstile
+                siteKey={
+                  process.env
+                    .NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""
+                }
+
+                onSuccess={(token) => {
+                  setTurnstileToken(token);
+                  setError("");
+                }}
+
+                onExpire={() => {
+                  setTurnstileToken("");
+                }}
+
+                onError={() => {
+                  setTurnstileToken("");
+
+                  setError(
+                    "Security verification failed. Please try again."
+                  );
+                }}
+              />
+
+            </div>
+
+            {/* ================= SUCCESS ================= */}
 
             {success && (
               <p
@@ -153,8 +238,7 @@ const Footer = () => {
               </p>
             )}
 
-
-            {/* Error Message */}
+            {/* ================= ERROR ================= */}
 
             {error && (
               <p
@@ -170,7 +254,6 @@ const Footer = () => {
         </div>
 
       </div>
-
 
       {/* ================= LINKS ================= */}
 
@@ -224,7 +307,6 @@ const Footer = () => {
           </ul>
         </div>
 
-
         {/* Support */}
 
         <div>
@@ -272,7 +354,6 @@ const Footer = () => {
 
           </ul>
         </div>
-
 
         {/* Services */}
 
@@ -322,7 +403,6 @@ const Footer = () => {
           </ul>
         </div>
 
-
         {/* Contact */}
 
         <div>
@@ -333,7 +413,6 @@ const Footer = () => {
           <ul className="space-y-4 font-space-grotesk text-sm text-white/80">
 
             <li className="flex gap-3">
-
               <span>☎</span>
 
               <a
@@ -342,12 +421,9 @@ const Footer = () => {
               >
                 +92 315 9711237
               </a>
-
             </li>
 
-
             <li className="flex gap-3">
-
               <span>✉</span>
 
               <a
@@ -356,12 +432,9 @@ const Footer = () => {
               >
                 hadi@nexgenbyte.com
               </a>
-
             </li>
 
-
             <li className="flex gap-3">
-
               <span>⌖</span>
 
               <span>
@@ -369,14 +442,12 @@ const Footer = () => {
                 <br />
                 Pakistan
               </span>
-
             </li>
 
           </ul>
         </div>
 
       </div>
-
 
       {/* ================= BOTTOM BAR ================= */}
 
@@ -399,7 +470,6 @@ const Footer = () => {
 
           </div>
 
-
           {/* Socials */}
 
           <div className="flex items-center gap-5">
@@ -407,7 +477,6 @@ const Footer = () => {
             <span className="font-space-grotesk font-semibold">
               Follow Us
             </span>
-
 
             {/* Facebook */}
 
@@ -421,7 +490,6 @@ const Footer = () => {
               f
             </a>
 
-
             {/* Instagram */}
 
             <a
@@ -433,7 +501,6 @@ const Footer = () => {
             >
               ◎
             </a>
-
 
             {/* X */}
 
@@ -447,7 +514,6 @@ const Footer = () => {
               𝕏
             </a>
 
-
             {/* LinkedIn */}
 
             <a
@@ -459,7 +525,6 @@ const Footer = () => {
             >
               in
             </a>
-
 
             {/* GitHub */}
 
@@ -476,7 +541,6 @@ const Footer = () => {
           </div>
 
         </div>
-
 
         {/* ================= HUGE LOGO ================= */}
 
