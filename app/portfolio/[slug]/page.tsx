@@ -74,6 +74,13 @@ export default async function ProjectPage({
             {project.shortDescription}
           </p>
 
+          {/* --------------------------------
+          Live Demo Link:
+          ------------------------- */}
+           <a href={project.liveDemoLink} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline bg-text text-white px-4 py-2 rounded-lg mt-4 inline-block">
+             View Live Demo
+           </a>
+
         </div>
 
 
