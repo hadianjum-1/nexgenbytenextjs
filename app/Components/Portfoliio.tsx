@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef  ,useEffect} from "react";
+import React, { useRef, useLayoutEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
@@ -10,83 +10,157 @@ import { projects } from "@/app/data/Projects";
 gsap.registerPlugin(ScrollTrigger);
 
 const Portfolio = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-  const ctx = gsap.context(() => {
 
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    const scrollArea = scrollAreaRef.current;
     const track = trackRef.current;
 
-    if (!track) return;
+    if (!section || !scrollArea || !track) return;
 
-    const getScrollAmount = () => {
-      return track.scrollWidth - window.innerWidth;
-    };
+    const ctx = gsap.context(() => {
+      const getScrollAmount = () => {
+        const maxScroll = track.scrollWidth - window.innerWidth;
 
-    gsap.to(track, {
-      x: () => -getScrollAmount(),
+        return Math.max(0, maxScroll);
+      };
 
-      ease: "none",
+      const animation = gsap.to(track, {
+        x: () => -getScrollAmount(),
 
-      scrollTrigger: {
-        trigger: sectionRef.current,
+        ease: "none",
 
-        start: "top top",
+        scrollTrigger: {
+          trigger: scrollArea,
 
-        end: () => `+=${getScrollAmount()}`,
+          start: "top top",
 
-        pin: true,
+          end: () => `+=${getScrollAmount()}`,
 
-        scrub: 1,
+          pin: true,
 
-        invalidateOnRefresh: true,
+          scrub: 1,
 
-        anticipatePin: 1,
-      },
-    });
+          invalidateOnRefresh: true,
 
-  }, sectionRef);
+          anticipatePin: 1,
 
-  return () => ctx.revert();
+          refreshPriority: 1,
+        },
+      });
 
-}, []);
+      ScrollTrigger.refresh();
+
+      return () => {
+        animation.kill();
+      };
+    }, section);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
     <section
       ref={sectionRef}
       id="portfolio"
-      className="relative w-full overflow-hidden bg-background"
+      className="
+        relative
+        w-full
+        overflow-hidden
+        bg-background
+      "
     >
+
       {/* =====================================
           HEADER
       ===================================== */}
 
-      <div className="portfolio-header w-full px-5 sm:px-8 md:px-12 lg:px-16 pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16">
-        <div className="max-w-[1200px] mx-auto text-center">
+      <div
+        className="
+          portfolio-header
+          w-full
+          px-5
+          sm:px-8
+          md:px-12
+          lg:px-16
+          pt-20
+          sm:pt-24
+          md:pt-28
+          lg:pt-32
+          pb-12
+          sm:pb-16
+          lg:pb-20
+        "
+      >
+
+        <div className="mx-auto max-w-[1200px] text-center">
 
           {/* Label */}
 
-          <div className="inline-flex items-center gap-2 mb-4">
-            <span className="w-2 h-2 rounded-full bg-secondary" />
+          <div className="mb-4 inline-flex items-center gap-2">
 
-            <span className="font-space-grotesk text-xs sm:text-sm uppercase tracking-[0.2em] text-text-secondary/60">
+            <span className="h-2 w-2 rounded-full bg-secondary" />
+
+            <span
+              className="
+                font-space-grotesk
+                text-xs
+                uppercase
+                tracking-[0.2em]
+                text-text-secondary/60
+                sm:text-sm
+              "
+            >
               Portfolio
             </span>
+
           </div>
+
 
           {/* Heading */}
 
-          <h2 className="font-space-grotesk font-bold text-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight">
+          <h2
+            className="
+              font-space-grotesk
+              text-4xl
+              font-bold
+              tracking-tight
+              text-text
+              sm:text-5xl
+              md:text-6xl
+              lg:text-7xl
+              xl:text-8xl
+            "
+          >
             Explore Our
             <span className="text-secondary"> Real Work</span>
           </h2>
 
-          <p className="font-space-grotesk text-text-secondary/60 text-sm sm:text-base max-w-xl mx-auto mt-5 leading-relaxed">
+
+          {/* Description */}
+
+          <p
+            className="
+              mx-auto
+              mt-5
+              max-w-xl
+              font-space-grotesk
+              text-sm
+              leading-relaxed
+              text-text-secondary/60
+              sm:text-base
+              lg:text-lg
+            "
+          >
             From high-converting websites to powerful digital experiences,
             explore some of the work we&apos;ve created for modern businesses.
           </p>
 
         </div>
+
       </div>
 
 
@@ -95,25 +169,35 @@ const Portfolio = () => {
       ===================================== */}
 
       <div
-        ref={sectionRef}
-        className="portfolio-scroll relative"
+        ref={scrollAreaRef}
+        className="
+          portfolio-scroll
+          relative
+          w-full
+          overflow-hidden
+        "
       >
+
+        {/* TRACK */}
 
         <div
           ref={trackRef}
           className="
             portfolio-track
             flex
-            gap-4
-            sm:gap-6
-            md:gap-8
-            px-5
-            sm:px-8
-            md:px-12
-            lg:px-16
-            pb-20
-            sm:pb-24
             w-max
+            gap-4
+            px-5
+            pb-20
+            sm:gap-6
+            sm:px-8
+            sm:pb-24
+            md:gap-8
+            md:px-12
+            lg:gap-10
+            lg:px-16
+            xl:gap-12
+            2xl:px-20
           "
         >
 
@@ -126,16 +210,26 @@ const Portfolio = () => {
                 group
                 relative
                 flex-shrink-0
-                w-[82vw]
-                sm:w-[70vw]
-                md:w-[62vw]
-                lg:w-[55vw]
-                xl:w-[50vw]
-                max-w-[760px]
+
+                w-[86vw]
+
+                sm:w-[74vw]
+
+                md:w-[65vw]
+
+                lg:w-[58vw]
+
+                xl:w-[52vw]
+
+                2xl:w-[48vw]
+
+                max-w-[820px]
               "
             >
 
-              {/* Image */}
+              {/* =====================================
+                  IMAGE
+              ===================================== */}
 
               <Link
                 href={`/portfolio/${project.slug}`}
@@ -145,46 +239,50 @@ const Portfolio = () => {
                 <div
                   className="
                     relative
-                    w-full
                     aspect-[16/10]
+                    w-full
                     overflow-hidden
                     rounded-2xl
-                    sm:rounded-3xl
                     bg-gray-100
+                    sm:rounded-3xl
                   "
                 >
 
                   <Image
                     src={project.image}
-                    alt={project.title}
+                    alt={`${project.title} project preview`}
                     fill
                     sizes="
-                      (max-width: 640px) 82vw,
-                      (max-width: 768px) 70vw,
-                      (max-width: 1024px) 62vw,
-                      55vw
+                      (max-width: 640px) 86vw,
+                      (max-width: 768px) 74vw,
+                      (max-width: 1024px) 65vw,
+                      (max-width: 1280px) 58vw,
+                      (max-width: 1536px) 52vw,
+                      48vw
                     "
                     className="
                       object-cover
                       transition-transform
                       duration-700
                       ease-out
-                      group-hover:scale-105
+                      group-hover:scale-[1.04]
                     "
                   />
 
-                  {/* Dark overlay */}
+
+                  {/* Overlay */}
 
                   <div
                     className="
                       absolute
                       inset-0
                       bg-black/0
-                      group-hover:bg-black/20
                       transition-colors
                       duration-500
+                      group-hover:bg-black/20
                     "
                   />
+
 
                   {/* Arrow */}
 
@@ -193,34 +291,42 @@ const Portfolio = () => {
                       absolute
                       right-4
                       top-4
-                      sm:right-6
-                      sm:top-6
-                      w-10
+                      flex
                       h-10
-                      sm:w-12
-                      sm:h-12
+                      w-10
+                      translate-y-3
+                      items-center
+                      justify-center
                       rounded-full
                       bg-white
                       text-text
-                      flex
-                      items-center
-                      justify-center
                       opacity-0
-                      translate-y-3
-                      group-hover:opacity-100
-                      group-hover:translate-y-0
                       transition-all
                       duration-500
+                      group-hover:translate-y-0
+                      group-hover:opacity-100
+                      sm:right-6
+                      sm:top-6
+                      sm:h-12
+                      sm:w-12
                     "
                   >
+
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      fill="none" 
+                      fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      className="h-5 w-5 sm:h-6 sm:w-6"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
                     </svg>
+
                   </div>
 
                 </div>
@@ -228,36 +334,46 @@ const Portfolio = () => {
               </Link>
 
 
-              {/* Project Information */}
+              {/* =====================================
+                  PROJECT INFORMATION
+              ===================================== */}
 
               <div className="mt-5 sm:mt-6">
 
-                <div className="flex items-center justify-between gap-4">
+                <div
+                  className="
+                    flex
+                    items-start
+                    justify-between
+                    gap-4
+                  "
+                >
 
-                  <div>
+                  <div className="min-w-0">
 
                     <p
                       className="
+                        mb-2
                         font-space-grotesk
                         text-xs
-                        sm:text-sm
                         uppercase
                         tracking-widest
                         text-secondary
-                        mb-2
+                        sm:text-sm
                       "
                     >
                       {project.category}
                     </p>
 
+
                     <h3
                       className="
                         font-space-grotesk
                         text-xl
-                        sm:text-2xl
-                        md:text-3xl
                         font-semibold
                         text-text
+                        sm:text-2xl
+                        md:text-3xl
                       "
                     >
                       {project.title}
@@ -265,16 +381,20 @@ const Portfolio = () => {
 
                   </div>
 
+
+                  {/* Project number */}
+
                   <span
                     className="
                       hidden
-                      sm:block
+                      shrink-0
                       font-space-grotesk
                       text-sm
                       text-text-secondary/40
+                      sm:block
                     "
                   >
-                    0{index + 1}
+                    {String(index + 1).padStart(2, "0")}
                   </span>
 
                 </div>
@@ -282,13 +402,13 @@ const Portfolio = () => {
 
                 <p
                   className="
+                    mt-3
+                    max-w-xl
                     font-space-grotesk
                     text-sm
-                    sm:text-base
-                    text-text-secondary/60
-                    max-w-lg
-                    mt-3
                     leading-relaxed
+                    text-text-secondary/60
+                    sm:text-base
                   "
                 >
                   {project.shortDescription}
@@ -299,6 +419,22 @@ const Portfolio = () => {
             </article>
 
           ))}
+
+
+          {/* =====================================
+              EXTRA RIGHT SPACE
+              Prevents last card from being clipped
+          ===================================== */}
+
+          <div
+            aria-hidden="true"
+            className="
+              h-1
+              w-[10vw]
+              flex-shrink-0
+              lg:w-[15vw]
+            "
+          />
 
         </div>
 
@@ -311,42 +447,49 @@ const Portfolio = () => {
 
       <div
         className="
+          mx-auto
           flex
+          max-w-[1400px]
           flex-col
-          sm:flex-row
           items-start
-          sm:items-center
           justify-between
           gap-5
           px-5
+          pb-16
+          sm:flex-row
+          sm:items-center
           sm:px-8
+          sm:pb-20
           md:px-12
           lg:px-16
-          pb-16
-          sm:pb-20
-          max-w-[1400px]
-          mx-auto
         "
       >
 
-        <p className="font-space-grotesk text-sm text-text-secondary/50">
-          Scroll to explore our projects 
+        <p
+          className="
+            font-space-grotesk
+            text-sm
+            text-text-secondary/50
+          "
+        >
+          Scroll to explore our projects
         </p>
+
 
         <Link
           href="/portfolio"
           className="
-            font-space-grotesk
-            text-sm
-            sm:text-base
-            font-medium
-            text-text
             border-b
             border-text
             pb-1
-            hover:text-secondary
-            hover:border-secondary
+            font-space-grotesk
+            text-sm
+            font-medium
+            text-text
             transition-colors
+            hover:border-secondary
+            hover:text-secondary
+            sm:text-base
           "
         >
           View All Projects
@@ -359,3 +502,4 @@ const Portfolio = () => {
 };
 
 export default Portfolio;
+

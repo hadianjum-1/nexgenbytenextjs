@@ -1,3 +1,4 @@
+
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,10 +12,7 @@ interface PageProps {
   }>;
 }
 
-export default async function ProjectPage({
-  params,
-}: PageProps) {
-
+export default async function ProjectPage({ params }: PageProps) {
   const { slug } = await params;
 
   const project = projects.find(
@@ -25,115 +23,402 @@ export default async function ProjectPage({
     notFound();
   }
 
+  // Use gallery images when available.
+  // Fall back to the main project image for older projects.
+  const projectImages =
+    "images" in project && Array.isArray(project.images)
+      ? project.images
+      : [project.image];
+
   return (
     <>
       <Header />
 
       <main className="bg-background text-text">
 
-      {/* =================================
-          HERO
-      ================================= */}
+        {/* =================================
+            HERO
+        ================================= */}
 
-      <section className="w-[calc(100%-32px)] sm:w-[94vw] mx-auto pt-24 sm:pt-32">
+        <section className="w-[calc(100%-32px)] sm:w-[94vw] mx-auto pt-24 sm:pt-32">
 
-        <div className="max-w-[1100px] mx-auto">
+          <div className="max-w-[1100px] mx-auto">
 
-          <p className="font-space-grotesk text-secondary text-sm uppercase tracking-[0.2em]">
-            {project.category}
-          </p>
+            <p className="font-space-grotesk text-secondary text-sm uppercase tracking-[0.2em]">
+              {project.category}
+            </p>
 
-          <h1
-            className="
-              font-space-grotesk
-              font-bold
-              text-5xl
-              sm:text-6xl
-              md:text-7xl
-              lg:text-8xl
-              leading-[0.95]
-              tracking-tight
-              mt-5
-            "
-          >
-            {project.title}
-          </h1>
+            <h1
+              className="
+                font-space-grotesk
+                font-bold
+                text-5xl
+                sm:text-6xl
+                md:text-7xl
+                lg:text-8xl
+                leading-[0.95]
+                tracking-tight
+                mt-5
+              "
+            >
+              {project.title}
+            </h1>
 
-          <p
-            className="
-              font-space-grotesk
-              text-text-secondary/70
-              text-base
-              sm:text-lg
-              md:text-xl
-              max-w-2xl
-              leading-relaxed
-              mt-7
-            "
-          >
-            {project.shortDescription}
-          </p>
+            <p
+              className="
+                font-space-grotesk
+                text-text-secondary/70
+                text-base
+                sm:text-lg
+                md:text-xl
+                max-w-2xl
+                leading-relaxed
+                mt-7
+              "
+            >
+              {project.shortDescription}
+            </p>
 
-          {/* --------------------------------
-          Live Demo Link:
-          ------------------------- */}
-           <a href={project.liveDemoLink} target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline bg-text text-white px-4 py-2 rounded-lg mt-4 inline-block">
-             View Live Demo
-           </a>
+            {/* Live Demo */}
 
-        </div>
+            <a
+              href={project.liveDemoLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                text-secondary
+                hover:underline
+                bg-text
+                text-white
+                px-5
+                py-3
+                rounded-lg
+                mt-6
+                inline-block
+                font-space-grotesk
+                transition
+              "
+            >
+              View Live Demo →
+            </a>
 
-
-        {/* Project Image */}
-
-        <div
-          className="
-            relative
-            w-full
-            max-w-[1300px]
-            mx-auto
-            aspect-[16/9]
-            mt-14
-            sm:mt-20
-            overflow-hidden
-            rounded-2xl
-            sm:rounded-3xl
-          "
-        >
-
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            priority
-            className="object-cover"
-          />
-
-        </div>
-
-      </section>
-
-
-      {/* =================================
-          PROBLEM
-      ================================= */}
-
-      <section className="w-[calc(100%-32px)] sm:w-[90vw] max-w-[1100px] mx-auto py-24 sm:py-32">
-
-        <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8 md:gap-16">
-
-          <div>
-            <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
-              01
-            </span>
-
-            <h2 className="font-space-grotesk text-3xl sm:text-4xl font-semibold mt-3">
-              The Problem
-            </h2>
           </div>
 
 
-          <div>
+          {/* =================================
+              HERO IMAGE
+          ================================= */}
+
+          <div
+            className="
+              relative
+              w-full
+              max-w-[1300px]
+              mx-auto
+              aspect-[16/9]
+              mt-14
+              sm:mt-20
+              overflow-hidden
+              rounded-2xl
+              sm:rounded-3xl
+            "
+          >
+
+            <Image
+              src={projectImages[0]}
+              alt={`${project.title} project preview`}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 1300px"
+              className="object-cover"
+            />
+
+          </div>
+
+        </section>
+
+
+        {/* =================================
+            PROJECT GALLERY
+        ================================= */}
+
+        {projectImages.length > 1 && (
+          <section
+            className="
+              w-[calc(100%-32px)]
+              sm:w-[90vw]
+              max-w-[1300px]
+              mx-auto
+              py-20
+              sm:py-28
+            "
+          >
+
+            <div className="mb-10">
+
+              <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
+                Project Showcase
+              </span>
+
+              <h2
+                className="
+                  font-space-grotesk
+                  text-3xl
+                  sm:text-4xl
+                  md:text-5xl
+                  font-bold
+                  mt-3
+                "
+              >
+                Inside the project
+              </h2>
+
+              <p
+                className="
+                  font-space-grotesk
+                  text-text-secondary/60
+                  text-base
+                  sm:text-lg
+                  max-w-2xl
+                  mt-4
+                  leading-relaxed
+                "
+              >
+                A closer look at the interface, shopping experience,
+                and management system behind the project.
+              </p>
+
+            </div>
+
+
+            {/* Gallery */}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              {projectImages.slice(1).map((image, index) => (
+
+                <div
+                  key={image}
+                  className={`
+                    relative
+                    overflow-hidden
+                    rounded-2xl
+                    sm:rounded-3xl
+                    bg-black/5
+                    group
+                    ${
+                      index === 0
+                        ? "md:col-span-2 aspect-[16/8]"
+                        : "aspect-[16/10]"
+                    }
+                  `}
+                >
+
+                  <Image
+                    src={image}
+                    alt={`${project.title} screenshot ${index + 2}`}
+                    fill
+                    sizes="
+                      (max-width: 768px) 100vw,
+                      50vw
+                    "
+                    className="
+                      object-cover
+                      transition-transform
+                      duration-700
+                      group-hover:scale-[1.02]
+                    "
+                  />
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </section>
+        )}
+
+
+        {/* =================================
+            PROBLEM
+        ================================= */}
+
+        <section
+          className="
+            w-[calc(100%-32px)]
+            sm:w-[90vw]
+            max-w-[1100px]
+            mx-auto
+            py-24
+            sm:py-32
+          "
+        >
+
+          <div
+            className="
+              grid
+              grid-cols-1
+              md:grid-cols-[250px_1fr]
+              gap-8
+              md:gap-16
+            "
+          >
+
+            <div>
+
+              <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
+                01
+              </span>
+
+              <h2 className="font-space-grotesk text-3xl sm:text-4xl font-semibold mt-3">
+                The Problem
+              </h2>
+
+            </div>
+
+
+            <div>
+
+              <p
+                className="
+                  font-space-grotesk
+                  text-lg
+                  sm:text-xl
+                  md:text-2xl
+                  text-text-secondary/70
+                  leading-relaxed
+                "
+              >
+                {project.problem}
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* =================================
+            STRATEGY
+        ================================= */}
+
+        <section className="bg-text text-background">
+
+          <div
+            className="
+              w-[calc(100%-32px)]
+              sm:w-[90vw]
+              max-w-[1100px]
+              mx-auto
+              py-24
+              sm:py-32
+            "
+          >
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                md:grid-cols-[250px_1fr]
+                gap-8
+                md:gap-16
+              "
+            >
+
+              <div>
+
+                <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
+                  02
+                </span>
+
+                <h2 className="font-space-grotesk text-3xl sm:text-4xl font-semibold mt-3">
+                  Our Strategy
+                </h2>
+
+              </div>
+
+
+              <div>
+
+                <div className="space-y-0">
+
+                  {project.strategy.map(
+                    (item, index) => (
+
+                      <div
+                        key={index}
+                        className="
+                          flex
+                          gap-5
+                          py-6
+                          border-b
+                          border-white/10
+                        "
+                      >
+
+                        <span className="font-space-grotesk text-white/30">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+
+                        <p className="font-space-grotesk text-base sm:text-lg text-white/70">
+                          {item}
+                        </p>
+
+                      </div>
+
+                    )
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* =================================
+            SOLUTION
+        ================================= */}
+
+        <section
+          className="
+            w-[calc(100%-32px)]
+            sm:w-[90vw]
+            max-w-[1100px]
+            mx-auto
+            py-24
+            sm:py-32
+          "
+        >
+
+          <div
+            className="
+              grid
+              grid-cols-1
+              md:grid-cols-[250px_1fr]
+              gap-8
+              md:gap-16
+            "
+          >
+
+            <div>
+
+              <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
+                03
+              </span>
+
+              <h2 className="font-space-grotesk text-3xl sm:text-4xl font-semibold mt-3">
+                What We Built
+              </h2>
+
+            </div>
+
 
             <p
               className="
@@ -145,136 +430,159 @@ export default async function ProjectPage({
                 leading-relaxed
               "
             >
-              {project.problem}
+              {project.solution}
             </p>
 
           </div>
 
-        </div>
-
-      </section>
+        </section>
 
 
-      {/* =================================
-          STRATEGY
-      ================================= */}
+        {/* =================================
+            RESULTS
+        ================================= */}
 
-      <section className="bg-text text-background">
+        <section className="bg-background border-y border-black/10">
 
-        <div
-          className="
-            w-[calc(100%-32px)]
-            sm:w-[90vw]
-            max-w-[1100px]
-            mx-auto
-            py-24
-            sm:py-32
-          "
-        >
+          <div
+            className="
+              w-[calc(100%-32px)]
+              sm:w-[90vw]
+              max-w-[1100px]
+              mx-auto
+              py-24
+              sm:py-32
+            "
+          >
 
-          <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8 md:gap-16">
-
-            <div>
+            <div className="mb-14">
 
               <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
-                02
+                04
               </span>
 
-              <h2 className="font-space-grotesk text-3xl sm:text-4xl font-semibold mt-3">
-                Our Strategy
+              <h2 className="font-space-grotesk text-4xl sm:text-5xl md:text-6xl font-bold mt-3">
+                The Results
               </h2>
 
             </div>
 
 
-            <div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
 
-              <div className="space-y-0">
+              {project.results.map(
+                (result, index) => (
 
-                {project.strategy.map(
-                  (item, index) => (
+                  <div
+                    key={index}
+                    className="
+                      border
+                      border-black/10
+                      rounded-2xl
+                      p-5
+                      sm:p-7
+                    "
+                  >
 
                     <div
-                      key={index}
                       className="
-                        flex
-                        gap-5
-                        py-6
-                        border-b
-                        border-white/10
+                        font-space-grotesk
+                        text-3xl
+                        sm:text-4xl
+                        md:text-5xl
+                        font-bold
+                        text-secondary
                       "
                     >
-
-                      <span className="font-space-grotesk text-white/30">
-                        0{index + 1}
-                      </span>
-
-                      <p className="font-space-grotesk text-base sm:text-lg text-white/70">
-                        {item}
-                      </p>
-
+                      {result.value}
                     </div>
 
-                  )
-                )}
+                    <p
+                      className="
+                        font-space-grotesk
+                        text-xs
+                        sm:text-sm
+                        text-text-secondary/60
+                        mt-3
+                      "
+                    >
+                      {result.label}
+                    </p>
 
-              </div>
+                  </div>
+
+                )
+              )}
 
             </div>
 
           </div>
 
-        </div>
-
-      </section>
+        </section>
 
 
-      {/* =================================
-          SOLUTION
-      ================================= */}
+        {/* =================================
+            TESTIMONIAL
+        ================================= */}
 
-      <section className="w-[calc(100%-32px)] sm:w-[90vw] max-w-[1100px] mx-auto py-24 sm:py-32">
+        {project.testimonial && (
+          <section className="bg-text text-background">
 
-        <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8 md:gap-16">
+            <div
+              className="
+                w-[calc(100%-32px)]
+                sm:w-[90vw]
+                max-w-[1000px]
+                mx-auto
+                py-24
+                sm:py-32
+                text-center
+              "
+            >
 
-          <div>
-
-            <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
-              03
-            </span>
-
-            <h2 className="font-space-grotesk text-3xl sm:text-4xl font-semibold mt-3">
-              What We Built
-            </h2>
-
-          </div>
-
-
-          <p
-            className="
-              font-space-grotesk
-              text-lg
-              sm:text-xl
-              md:text-2xl
-              text-text-secondary/70
-              leading-relaxed
-            "
-          >
-            {project.solution}
-          </p>
-
-        </div>
-
-      </section>
+              <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
+                Client Testimonial
+              </span>
 
 
-      {/* =================================
-          RESULTS
-      ================================= */}
+              <blockquote
+                className="
+                  font-space-grotesk
+                  text-2xl
+                  sm:text-3xl
+                  md:text-5xl
+                  font-medium
+                  leading-tight
+                  mt-8
+                "
+              >
+                &quot;{project.testimonial.quote}&quot;
+              </blockquote>
 
-      <section className="bg-background border-y border-black/10">
 
-        <div
+              <div className="mt-10">
+
+                <p className="font-space-grotesk font-semibold">
+                  {project.testimonial.name}
+                </p>
+
+                <p className="font-space-grotesk text-sm text-white/50 mt-1">
+                  {project.testimonial.role}
+                </p>
+
+              </div>
+
+            </div>
+
+          </section>
+        )}
+
+
+        {/* =================================
+            CTA
+        ================================= */}
+
+        <section
           className="
             w-[calc(100%-32px)]
             sm:w-[90vw]
@@ -285,169 +593,52 @@ export default async function ProjectPage({
           "
         >
 
-          <div className="mb-14">
-
-            <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
-              04
-            </span>
-
-            <h2 className="font-space-grotesk text-4xl sm:text-5xl md:text-6xl font-bold mt-3">
-              The Results
-            </h2>
-
-          </div>
-
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-
-            {project.results.map(
-              (result, index) => (
-
-                <div
-                  key={index}
-                  className="
-                    border
-                    border-black/10
-                    rounded-2xl
-                    p-5
-                    sm:p-7
-                  "
-                >
-
-                  <div
-                    className="
-                      font-space-grotesk
-                      text-3xl
-                      sm:text-4xl
-                      md:text-5xl
-                      font-bold
-                      text-secondary
-                    "
-                  >
-                    {result.value}
-                  </div>
-
-                  <p
-                    className="
-                      font-space-grotesk
-                      text-xs
-                      sm:text-sm
-                      text-text-secondary/60
-                      mt-3
-                    "
-                  >
-                    {result.label}
-                  </p>
-
-                </div>
-
-              )
-            )}
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* =================================
-          TESTIMONIAL
-      ================================= */}
-
-      <section className="bg-text text-background">
-
-        <div
-          className="
-            w-[calc(100%-32px)]
-            sm:w-[90vw]
-            max-w-[1000px]
-            mx-auto
-            py-24
-            sm:py-32
-            text-center
-          "
-        >
-
-          <span className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
-            Client Testimonial
-          </span>
-
-
-          <blockquote
+          <div
             className="
-              font-space-grotesk
-              text-2xl
-              sm:text-3xl
-              md:text-5xl
-              font-medium
-              leading-tight
-              mt-8
+              flex
+              flex-col
+              md:flex-row
+              justify-between
+              items-start
+              md:items-center
+              gap-8
             "
           >
-            &quot;{project.testimonial.quote}&quot;
-          </blockquote>
+
+            <div>
+
+              <p className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
+                Have a similar project?
+              </p>
+
+              <h2 className="font-space-grotesk text-4xl sm:text-5xl font-bold mt-3">
+                Let&apos;s build something
+                <br className="hidden sm:block" />
+                great together.
+              </h2>
+
+            </div>
 
 
-          <div className="mt-10">
-
-            <p className="font-space-grotesk font-semibold">
-              {project.testimonial.name}
-            </p>
-
-            <p className="font-space-grotesk text-sm text-white/50 mt-1">
-              {project.testimonial.role}
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* =================================
-          CTA
-      ================================= */}
-
-      <section className="w-[calc(100%-32px)] sm:w-[90vw] max-w-[1100px] mx-auto py-24 sm:py-32">
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-
-          <div>
-
-            <p className="font-space-grotesk text-secondary text-sm uppercase tracking-widest">
-              Have a similar project?
-            </p>
-
-            <h2 className="font-space-grotesk text-4xl sm:text-5xl font-bold mt-3">
-              Let&apos;s build something
-              <br className="hidden sm:block" />
-              great together.
-            </h2>
+            <Link
+              href="/#contact"
+              className="
+                bg-text
+                text-background
+                px-7
+                py-4
+                rounded-full
+                font-space-grotesk
+                hover:bg-secondary
+                transition-colors
+              "
+            >
+              Start a Project →
+            </Link>
 
           </div>
 
-
-          <Link
-            href="/#contact"
-            className="
-              bg-text
-              text-background
-              px-7
-              py-4
-              rounded-full
-              font-space-grotesk
-              hover:bg-secondary
-              transition-colors
-            "
-          >
-            Start a Project â†’
-          </Link>
-
-        </div>
-
-      </section>
+        </section>
 
       </main>
 

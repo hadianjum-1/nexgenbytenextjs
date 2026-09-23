@@ -26,10 +26,11 @@ const Trustbadgesection = () => {
   const technologies = [
     "ParkSide Dental",
     "Meridian Analytics",
-    "SaaSify",
+    "Dr. Romana Durrani",
     "HealthTech Solutions",
     "Volta Energy",
     "Aura Cod",
+    "The north tactical",
   
   ];
 

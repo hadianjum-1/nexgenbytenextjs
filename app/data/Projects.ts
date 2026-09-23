@@ -1,5 +1,58 @@
 export const projects = [
   {
+  slug: "thenorth-tactical",
+  title: "TheNorthTactical",
+  category: "Ecommerce & Full-Stack",
+  liveDemoLink: "https://www.thenorthtactical.com/",
+
+  shortDescription:
+    "A custom full-stack ecommerce platform built for a tactical accessories retailer, combining a premium storefront with a powerful administration system.",
+
+  image: "/thenorth-tactical/hero.jpg",
+
+  images: [
+    "/thenorth-tactical/hero.jpg",
+    "/thenorth-tactical/homepage.jpg",
+    "/thenorth-tactical/products.jpg",
+    "/thenorth-tactical/product-detail.jpg",
+    "/thenorth-tactical/cart.jpg",
+    "/thenorth-tactical/checkout.jpg",
+    "/thenorth-tactical/admin-dashboard.jpg",
+    "/thenorth-tactical/admin-products.jpg",
+    "/thenorth-tactical/admin-orders.jpg",
+  ],
+
+  problem:
+    "TheNorthTactical needed more than a standard ecommerce storefront. The business required a scalable platform where customers could discover and purchase products while the team could manage products, inventory, orders, discounts, shipping, and customer activity from a centralized admin panel.",
+
+  strategy: [
+    "Designed a rugged, premium visual identity inspired by tactical and outdoor environments.",
+    "Built a responsive ecommerce storefront focused on product discovery and conversion.",
+    "Created a Shopify-style administration dashboard for store management.",
+    "Structured the product system around variants, SKUs, pricing, inventory, and product images.",
+    "Designed the commerce architecture around PostgreSQL and Prisma.",
+    "Built the foundation for orders, discounts, reviews, wishlists, bundles, loyalty, and analytics.",
+    "Designed the system to support weight-based shipping and multiple payment methods.",
+  ],
+
+  solution:
+    "A custom full-stack ecommerce platform that combines a high-performance storefront with a centralized commerce management system, giving the business control over its catalog, inventory, orders, customers, and promotions.",
+
+  results: [
+    { value: "Full-Stack", label: "Custom ecommerce platform" },
+    { value: "Admin", label: "Commerce management system" },
+    { value: "PKR", label: "Pakistan-focused commerce" },
+    { value: "Next.js", label: "Modern web architecture" },
+  ],
+
+  testimonial: {
+    quote:
+      "A custom ecommerce experience designed around our products and business operations.",
+    name: "Noman ilyas",
+    role: "Tactical Accessories Retailer",
+  },
+},
+  {
     slug: "parkside-dental",
     title: "Parkside Dental",
     category: "Healthcare & Dental",
