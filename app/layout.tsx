@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import MetaPixel from "./Components/MetaPixel";
 
 import Preloader from "./Components/Preloader";
 import PromoPopup from "./Components/PromoPopup";
@@ -155,6 +156,7 @@ export default function RootLayout({
 
         <PromoPopup />
         <AIChatbot />
+        <MetaPixel/>
 
       </body>
     </html>
