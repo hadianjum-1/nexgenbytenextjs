@@ -99,7 +99,7 @@ export default async function ProjectPage({ params }: PageProps) {
                 transition
               "
             >
-              View Live Demo →
+              View Live  →
             </a>
 
           </div>

@@ -419,7 +419,7 @@ const Footer = () => {
                 href="tel:+923159711237"
                 className="transition-colors hover:text-secondary"
               >
-                +92 315 9711237
+                +92 343 9131899
               </a>
             </li>
 
@@ -430,7 +430,7 @@ const Footer = () => {
                 href="mailto:hadi@nexgenbyte.com"
                 className="break-all transition-colors hover:text-secondary"
               >
-                hadi@nexgenbyte.com
+               contact@nexgenbyte.com
               </a>
             </li>
 

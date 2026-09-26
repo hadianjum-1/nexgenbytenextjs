@@ -72,115 +72,156 @@ const Process = () => {
 
   useEffect(() => {
     const section = sectionRef.current;
-    const cardsContainer = cardsRef.current;
-    const progress = progressRef.current;
 
-    if (!section || !cardsContainer) return;
+    if (!section) return;
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
-      // =====================================================
-      // DESKTOP
-      // =====================================================
+      /* =====================================================
+         DESKTOP / TABLET
+      ===================================================== */
 
-     mm.add("(min-width: 768px)", () => {
-  const cards =
-    gsap.utils.toArray<HTMLElement>(".process-card");
+      mm.add("(min-width: 768px)", () => {
+        const cards =
+          gsap.utils.toArray<HTMLElement>(".process-card");
 
-  // Stack cards
-  gsap.set(cards, {
-    position: "absolute",
-    inset: 0,
-  });
+        if (!cards.length) return;
 
-  // First card
-  gsap.set(cards[0], {
-    y: 0,
-    opacity: 1,
-    scale: 1,
-    zIndex: 5,
-  });
+        /*
+         * Stack all cards.
+         */
 
-  // Other cards
-  gsap.set(cards.slice(1), {
-    y: 50,
-    opacity: 0,
-    scale: 0.97,
-    zIndex: 1,
-  });
+        gsap.set(cards, {
+          position: "absolute",
+          inset: 0,
+        });
 
-  const timeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: section,
+        /*
+         * First card visible.
+         */
 
-      start: "top top",
+        gsap.set(cards[0], {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          zIndex: cards.length,
+        });
 
-      // SHORTER SCROLL
-      end: () =>
-        `+=${window.innerHeight * 2.5}`,
+        /*
+         * Remaining cards hidden.
+         */
 
-      pin: true,
+        gsap.set(cards.slice(1), {
+          y: 45,
+          opacity: 0,
+          scale: 0.975,
+          zIndex: 1,
+        });
 
-      // FASTER RESPONSE
-      scrub: 0.3,
+        /*
+         * Main timeline.
+         */
 
-      anticipatePin: 1,
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
 
-      invalidateOnRefresh: true,
+            start: "top top",
 
-      onUpdate: (self) => {
-        if (progress) {
-          gsap.set(progress, {
-            scaleX: self.progress,
-          });
-        }
-      },
-    },
-  });
+            /*
+             * Use the viewport height so the animation
+             * scales naturally on different monitors.
+             */
+            end: () => {
+              const viewportHeight = window.innerHeight;
 
-  cards.forEach((card, index) => {
-    if (index === 0) return;
+              return `+=${Math.max(
+                viewportHeight * 2.8,
+                cards.length * 320
+              )}`;
+            },
 
-    const previousCard = cards[index - 1];
+            pin: true,
 
-    const label = `card-${index}`;
+            scrub: 0.7,
 
-    // Previous card exits
-    timeline.to(
-      previousCard,
-      {
-        y: -50,
-        opacity: 0,
-        scale: 0.97,
-        duration: 0.6,
-        ease: "power2.inOut",
-      },
-      label
-    );
+            anticipatePin: 1,
 
-    // New card enters
-    timeline.to(
-      card,
-      {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        duration: 0.6,
-        ease: "power2.out",
-      },
-      label
-    );
-  });
+            invalidateOnRefresh: true,
 
-  return () => {
-    timeline.scrollTrigger?.kill();
-    timeline.kill();
-  };
-});
-      // =====================================================
-      // MOBILE
-      // =====================================================
+            onUpdate: (self) => {
+              if (!progressRef.current) return;
+
+              gsap.set(progressRef.current, {
+                scaleX: self.progress,
+              });
+            },
+          },
+        });
+
+        /*
+         * Card transitions.
+         */
+
+        cards.forEach((card, index) => {
+          if (index === 0) return;
+
+          const previousCard = cards[index - 1];
+
+          const label = `step-${index}`;
+
+          /*
+           * Previous card exits.
+           */
+
+          timeline.to(
+            previousCard,
+            {
+              y: -45,
+              opacity: 0,
+              scale: 0.975,
+              duration: 0.8,
+              ease: "power2.inOut",
+            },
+            label
+          );
+
+          /*
+           * New card enters.
+           */
+
+          timeline.to(
+            card,
+            {
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              duration: 0.8,
+              ease: "power2.out",
+            },
+            label
+          );
+        });
+
+        /*
+         * Refresh after everything has been created.
+         */
+
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
+
+        return () => {
+          timeline.scrollTrigger?.kill();
+          timeline.kill();
+        };
+      });
+
+
+      /* =====================================================
+         MOBILE
+      ===================================================== */
 
       mm.add("(max-width: 767px)", () => {
         const cards =
@@ -190,18 +231,20 @@ const Process = () => {
           gsap.fromTo(
             card,
             {
-              y: 50,
+              y: 35,
               opacity: 0,
             },
             {
               y: 0,
               opacity: 1,
-              duration: 0.7,
+              duration: 0.65,
               ease: "power3.out",
 
               scrollTrigger: {
                 trigger: card,
-                start: "top 85%",
+
+                start: "top 88%",
+
                 toggleActions:
                   "play none none reverse",
               },
@@ -209,9 +252,12 @@ const Process = () => {
           );
         });
       });
-    }, sectionRef);
 
-    return () => ctx.revert();
+    }, section);
+
+    return () => {
+      ctx.revert();
+    };
   }, []);
 
   return (
@@ -220,98 +266,98 @@ const Process = () => {
       className="
         relative
         w-full
+        overflow-hidden
         bg-text
         text-background
-        overflow-hidden
       "
     >
 
       {/* =====================================================
-          DESKTOP
+          DESKTOP / TABLET
       ===================================================== */}
 
       <div
         className="
-          hidden
-          md:block
-
           relative
-          h-screen
-          min-h-[700px]
+          hidden
+          min-h-screen
+          md:block
         "
       >
 
-        {/* ================= HEADER ================= */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <div
           className="
             absolute
-            top-0
             left-0
-
-            w-full
-
+            top-0
             z-30
+            w-full
             pointer-events-none
           "
         >
 
           <div
             className="
-              w-[90%]
-              max-w-[1400px]
               mx-auto
+              w-[88%]
+              max-w-[1400px]
 
               pt-10
-              lg:pt-14
-              xl:pt-16
+
+              lg:pt-12
+
+              xl:pt-14
+
+              2xl:pt-16
             "
           >
 
             <span
               className="
                 font-space-grotesk
-                text-secondary
                 text-sm
-                md:text-base
+                text-secondary
+
+                lg:text-base
               "
             >
               Our Process
             </span>
 
+
             <h2
               className="
-                font-space-grotesk
-
-                text-4xl
-                md:text-5xl
-                lg:text-6xl
-                xl:text-7xl
-
-                font-bold
-
                 mt-3
-
+                font-space-grotesk
+                text-4xl
+                font-bold
                 leading-[0.95]
+
+                md:text-5xl
+
+                lg:text-6xl
+
+                xl:text-7xl
               "
             >
               How We Build
             </h2>
 
+
             <p
               className="
+                mt-4
+                max-w-xl
                 font-space-grotesk
-
+                text-sm
+                leading-relaxed
                 text-white/50
 
-                text-sm
-                md:text-base
-
-                max-w-xl
-
-                mt-4
-
-                leading-relaxed
+                lg:text-base
               "
             >
               A proven process designed to turn your ideas
@@ -325,40 +371,32 @@ const Process = () => {
 
 
         {/* =================================================
-            CARD CONTAINER
+            CARD AREA
         ================================================= */}
 
         <div
           ref={cardsRef}
           className="
             absolute
-
             left-1/2
+            top-[235px]
+            h-[calc(100vh-335px)]
+            w-[88%]
+            max-w-[1400px]
             -translate-x-1/2
 
-            top-[250px]
-            lg:top-[280px]
-            xl:top-[300px]
+            lg:top-[255px]
+            lg:h-[calc(100vh-355px)]
 
-            w-[90%]
-            max-w-[1200px]
+            xl:top-[275px]
+            xl:h-[calc(100vh-375px)]
 
-            h-[calc(100vh-350px)]
-            min-h-[380px]
-            max-h-[520px]
-
-            pb-20
+            2xl:top-[290px]
+            2xl:h-[calc(100vh-390px)]
           "
         >
 
-          <div
-            className="
-              relative
-
-              w-full
-              h-full
-            "
-          >
+          <div className="relative h-full w-full">
 
             {processes.map((process) => (
 
@@ -366,35 +404,40 @@ const Process = () => {
                 key={process.number}
                 className="
                   process-card
-
                   absolute
                   inset-0
 
-                  w-full
-                  h-full
-
-                  rounded-2xl
-                  lg:rounded-3xl
-
-                  border
-                  border-white/10
-
-                  bg-[#111111]
-
-                  p-7
-                  md:p-8
-                  lg:p-10
-                  xl:p-12
-
                   flex
+                  h-full
+                  w-full
                   flex-col
                   justify-between
 
+                  overflow-hidden
+
+                  rounded-2xl
+                  border
+                  border-white/10
+                  bg-[#111111]
+
+                  p-6
+
                   shadow-2xl
+
+                  md:p-7
+
+                  lg:rounded-3xl
+                  lg:p-9
+
+                  xl:p-11
+
+                  2xl:p-12
                 "
               >
 
-                {/* ================= TOP ================= */}
+                {/* =========================================
+                    CARD TOP
+                ========================================= */}
 
                 <div>
 
@@ -403,62 +446,53 @@ const Process = () => {
                       flex
                       items-start
                       justify-between
-
-                      gap-5
+                      gap-6
                     "
                   >
 
-                    <div>
+                    <div className="min-w-0">
 
                       <span
                         className="
-                          process-number
-
                           font-space-grotesk
-
+                          text-xs
+                          tracking-widest
                           text-secondary
 
-                          text-xs
                           md:text-sm
-
-                          tracking-widest
                         "
                       >
                         {process.number}
                       </span>
 
+
                       <h3
                         className="
-                          process-title
-
-                          font-space-grotesk
-
-                          text-3xl
-                          md:text-4xl
-                          lg:text-5xl
-                          xl:text-6xl
-
-                          font-bold
-
                           mt-2
-                          md:mt-3
-
+                          font-space-grotesk
+                          text-3xl
+                          font-bold
                           leading-tight
+
+                          md:text-4xl
+
+                          lg:text-5xl
+
+                          xl:text-6xl
                         "
                       >
                         {process.title}
                       </h3>
 
+
                       <p
                         className="
+                          mt-2
                           font-space-grotesk
-
+                          text-xs
                           text-secondary
 
-                          text-xs
                           md:text-sm
-
-                          mt-2
                         "
                       >
                         {process.week}
@@ -467,33 +501,29 @@ const Process = () => {
                     </div>
 
 
-                    {/* ARROW */}
+                    {/* Arrow */}
 
                     <div
                       className="
-                        flex-shrink-0
-
-                        w-10
-                        h-10
-                        md:w-11
-                        md:h-11
-
-                        rounded-full
-
-                        border
-                        border-white/20
-
                         flex
+                        h-9
+                        w-9
+                        flex-shrink-0
                         items-center
                         justify-center
-
-                        text-lg
-
+                        rounded-full
+                        border
+                        border-white/20
+                        text-base
                         transition-all
                         duration-300
 
-                        hover:bg-secondary
+                        md:h-11
+                        md:w-11
+                        md:text-lg
+
                         hover:border-secondary
+                        hover:bg-secondary
                       "
                     >
                       ↗
@@ -502,24 +532,22 @@ const Process = () => {
                   </div>
 
 
-                  {/* ================= DESCRIPTION ================= */}
+                  {/* Description */}
 
                   <p
                     className="
+                      mt-6
+                      max-w-3xl
                       font-space-grotesk
-
+                      text-sm
+                      leading-relaxed
                       text-white/60
 
-                      text-sm
+                      md:mt-7
                       md:text-base
+
+                      lg:mt-8
                       lg:text-lg
-
-                      leading-relaxed
-
-                      max-w-2xl
-
-                      mt-7
-                      lg:mt-9
                     "
                   >
                     {process.description}
@@ -528,62 +556,60 @@ const Process = () => {
                 </div>
 
 
-                {/* ================= BOTTOM ================= */}
+                {/* =========================================
+                    CARD BOTTOM
+                ========================================= */}
 
                 <div
                   className="
+                    mt-6
                     grid
                     grid-cols-1
-                    lg:grid-cols-2
-
-                    gap-8
-                    lg:gap-12
-
-                    pt-6
-                    lg:pt-7
-
+                    gap-6
                     border-t
                     border-white/10
+                    pt-5
 
-                    mt-8
+                    md:gap-8
+
+                    lg:grid-cols-2
+                    lg:gap-12
+                    lg:pt-6
                   "
                 >
 
-                  {/* DELIVERABLE */}
+                  {/* Deliverable */}
 
                   <div>
 
                     <span
                       className="
+                        font-space-grotesk
+                        text-[10px]
+                        uppercase
+                        tracking-[0.18em]
                         text-secondary
 
-                        text-[10px]
                         md:text-xs
-
-                        uppercase
-
-                        tracking-[0.18em]
                       "
                     >
                       Deliverable
                     </span>
 
+
                     <p
                       className="
+                        mt-2
+                        max-w-xl
                         font-space-grotesk
-
+                        text-xs
+                        leading-relaxed
                         text-white/60
 
-                        text-xs
                         md:text-sm
-                        lg:text-base
 
-                        leading-relaxed
-
-                        mt-2
                         lg:mt-3
-
-                        max-w-md
+                        lg:text-base
                       "
                     >
                       {process.deliverable}
@@ -592,41 +618,38 @@ const Process = () => {
                   </div>
 
 
-                  {/* WHAT WE NEED */}
+                  {/* What we need */}
 
                   <div>
 
                     <span
                       className="
+                        font-space-grotesk
+                        text-[10px]
+                        uppercase
+                        tracking-[0.18em]
                         text-secondary
 
-                        text-[10px]
                         md:text-xs
-
-                        uppercase
-
-                        tracking-[0.18em]
                       "
                     >
                       What we need from you
                     </span>
 
+
                     <p
                       className="
+                        mt-2
+                        max-w-xl
                         font-space-grotesk
-
+                        text-xs
+                        leading-relaxed
                         text-white/60
 
-                        text-xs
                         md:text-sm
-                        lg:text-base
 
-                        leading-relaxed
-
-                        mt-2
                         lg:mt-3
-
-                        max-w-md
+                        lg:text-base
                       "
                     >
                       {process.need}
@@ -646,24 +669,21 @@ const Process = () => {
 
 
         {/* =================================================
-            PROGRESS BAR
+            PROGRESS
         ================================================= */}
 
         <div
           className="
             absolute
-
-            bottom-6
-            lg:bottom-8
-
-            left-[5%]
-            right-[5%]
-
+            bottom-5
+            left-[6%]
+            right-[6%]
+            z-40
             h-[2px]
-
+            overflow-hidden
             bg-white/10
 
-            z-40
+            lg:bottom-7
           "
         >
 
@@ -672,12 +692,9 @@ const Process = () => {
             className="
               h-full
               w-full
-
-              bg-secondary
-
               origin-left
-
               scale-x-0
+              bg-secondary
             "
           />
 
@@ -692,64 +709,55 @@ const Process = () => {
 
       <div
         className="
-          md:hidden
-
           w-full
-
           px-5
-          sm:px-6
-
           py-16
+
+          sm:px-6
           sm:py-20
+
+          md:hidden
         "
       >
 
-        {/* HEADER */}
+        {/* Mobile Header */}
 
         <div className="mb-10 sm:mb-12">
 
           <span
             className="
               font-space-grotesk
-
-              text-secondary
-
               text-sm
+              text-secondary
             "
           >
             Our Process
           </span>
 
+
           <h2
             className="
-              font-space-grotesk
-
-              text-4xl
-              sm:text-5xl
-
-              font-bold
-
               mt-3
-
+              font-space-grotesk
+              text-4xl
+              font-bold
               leading-[0.95]
+
+              sm:text-5xl
             "
           >
             How We Build
           </h2>
 
+
           <p
             className="
-              font-space-grotesk
-
-              text-white/50
-
-              text-sm
-
-              leading-relaxed
-
               mt-5
-
               max-w-md
+              font-space-grotesk
+              text-sm
+              leading-relaxed
+              text-white/50
             "
           >
             A proven process designed to turn your ideas
@@ -759,7 +767,7 @@ const Process = () => {
         </div>
 
 
-        {/* MOBILE CARDS */}
+        {/* Mobile Cards */}
 
         <div className="flex flex-col gap-5">
 
@@ -769,31 +777,34 @@ const Process = () => {
               key={process.number}
               className="
                 process-card
-
+                flex
+                min-h-[450px]
                 w-full
+                flex-col
+                justify-between
 
-                min-h-[470px]
+                overflow-hidden
 
                 rounded-2xl
-
                 border
                 border-white/10
-
-                bg-white/[0.025]
+                bg-[#111111]
 
                 p-6
 
-                flex
-                flex-col
-                justify-between
+                sm:min-h-[470px]
+                sm:p-7
               "
             >
 
               <div>
 
+                {/* Header */}
+
                 <div
                   className="
                     flex
+                    items-start
                     justify-between
                     gap-4
                   "
@@ -803,39 +814,36 @@ const Process = () => {
 
                     <span
                       className="
-                        text-secondary
-
                         font-space-grotesk
-
                         text-sm
+                        text-secondary
                       "
                     >
                       {process.number}
                     </span>
 
+
                     <h3
                       className="
-                        process-title
-
-                        font-space-grotesk
-
-                        text-3xl
-
-                        font-bold
-
                         mt-2
+                        font-space-grotesk
+                        text-3xl
+                        font-bold
+                        leading-tight
+
+                        sm:text-4xl
                       "
                     >
                       {process.title}
                     </h3>
 
+
                     <p
                       className="
-                        text-secondary
-
-                        text-sm
-
                         mt-2
+                        font-space-grotesk
+                        text-sm
+                        text-secondary
                       "
                     >
                       {process.week}
@@ -843,9 +851,18 @@ const Process = () => {
 
                   </div>
 
+
                   <span
                     className="
-                      text-xl
+                      flex
+                      h-9
+                      w-9
+                      flex-shrink-0
+                      items-center
+                      justify-center
+                      rounded-full
+                      border
+                      border-white/10
                       text-white/40
                     "
                   >
@@ -855,17 +872,17 @@ const Process = () => {
                 </div>
 
 
+                {/* Description */}
+
                 <p
                   className="
+                    mt-7
                     font-space-grotesk
-
+                    text-sm
+                    leading-relaxed
                     text-white/60
 
-                    text-sm
-
-                    leading-relaxed
-
-                    mt-7
+                    sm:text-base
                   "
                 >
                   {process.description}
@@ -874,44 +891,41 @@ const Process = () => {
               </div>
 
 
-              {/* BOTTOM */}
+              {/* Bottom */}
 
               <div
                 className="
-                  pt-6
-
                   mt-8
-
                   border-t
                   border-white/10
+                  pt-6
                 "
               >
+
+                {/* Deliverable */}
 
                 <div>
 
                   <span
                     className="
-                      text-secondary
-
+                      font-space-grotesk
                       text-[10px]
-
                       uppercase
-
                       tracking-widest
+                      text-secondary
                     "
                   >
                     Deliverable
                   </span>
 
+
                   <p
                     className="
-                      text-white/60
-
-                      text-sm
-
-                      leading-relaxed
-
                       mt-2
+                      font-space-grotesk
+                      text-sm
+                      leading-relaxed
+                      text-white/60
                     "
                   >
                     {process.deliverable}
@@ -920,31 +934,30 @@ const Process = () => {
                 </div>
 
 
+                {/* Need */}
+
                 <div className="mt-5">
 
                   <span
                     className="
-                      text-secondary
-
+                      font-space-grotesk
                       text-[10px]
-
                       uppercase
-
                       tracking-widest
+                      text-secondary
                     "
                   >
                     What we need from you
                   </span>
 
+
                   <p
                     className="
-                      text-white/60
-
-                      text-sm
-
-                      leading-relaxed
-
                       mt-2
+                      font-space-grotesk
+                      text-sm
+                      leading-relaxed
+                      text-white/60
                     "
                   >
                     {process.need}
@@ -961,40 +974,48 @@ const Process = () => {
         </div>
 
 
-        {/* MOBILE CTA */}
+        {/* Mobile CTA */}
 
         <div
           className="
-            mt-14
-
-            pt-7
-
+            mt-12
             border-t
             border-white/10
+            pt-7
+
+            sm:mt-14
           "
         >
 
-          <p className="text-white/40 text-sm">
+          <p
+            className="
+              font-space-grotesk
+              text-sm
+              text-white/40
+            "
+          >
             Ready to build something that grows?
           </p>
-          <Link  href="/contact"
+
+
+          <Link
+            href="/contact"
             className="
-              inline-flex
-
               mt-4
-
+              inline-flex
+              rounded-full
               bg-secondary
-              text-white
-
               px-6
               py-3
-
-              rounded-full
-
               font-space-grotesk
-
               text-sm
-            ">Start a Project →</Link>
+              text-white
+              transition-opacity
+              hover:opacity-90
+            "
+          >
+            Start a Project →
+          </Link>
 
         </div>
 
@@ -1005,3 +1026,4 @@ const Process = () => {
 };
 
 export default Process;
+

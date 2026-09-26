@@ -379,7 +379,7 @@ export default async function ServicePage({ params }: Props) {
             </h2>
 
             <Link
-              href="/#contact"
+              href="/contact"
               className="mt-8 inline-block rounded-full bg-white px-7 py-4 font-space-grotesk text-text transition-transform hover:scale-105"
             >
               Start Your Project →

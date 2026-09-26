@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useLayoutEffect } from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
@@ -22,97 +22,151 @@ const Portfolio = () => {
     if (!section || !scrollArea || !track) return;
 
     const ctx = gsap.context(() => {
-      const getScrollAmount = () => {
-        const maxScroll = track.scrollWidth - window.innerWidth;
+      const mm = gsap.matchMedia();
 
-        return Math.max(0, maxScroll);
-      };
+      /*
+       * ==========================================
+       * DESKTOP / TABLET
+       * GSAP horizontal scroll
+       * ==========================================
+       */
 
-      const animation = gsap.to(track, {
-        x: () => -getScrollAmount(),
+      mm.add("(min-width: 768px)", () => {
+        const getScrollAmount = () => {
+          const amount = track.scrollWidth - window.innerWidth;
 
-        ease: "none",
+          return Math.max(0, amount);
+        };
 
-        scrollTrigger: {
-          trigger: scrollArea,
+        const tween = gsap.to(track, {
+          x: () => -getScrollAmount(),
+          ease: "none",
 
-          start: "top top",
+          scrollTrigger: {
+            trigger: scrollArea,
 
-          end: () => `+=${getScrollAmount()}`,
+            start: "top top",
 
-          pin: true,
+            end: () => `+=${getScrollAmount()}`,
 
-          scrub: 1,
+            pin: true,
 
-          invalidateOnRefresh: true,
+            scrub: 1,
 
-          anticipatePin: 1,
+            invalidateOnRefresh: true,
 
-          refreshPriority: 1,
-        },
+            anticipatePin: 1,
+
+            refreshPriority: 1,
+          },
+        });
+
+        ScrollTrigger.refresh();
+
+        return () => {
+          tween.kill();
+        };
       });
 
-      ScrollTrigger.refresh();
+      /*
+       * ==========================================
+       * MOBILE
+       *
+       * No GSAP pinning.
+       * Native horizontal scrolling is much
+       * smoother and more reliable on phones.
+       * ==========================================
+       */
 
-      return () => {
-        animation.kill();
-      };
+      mm.add("(max-width: 767px)", () => {
+        gsap.set(track, {
+          clearProps: "transform",
+        });
+      });
     }, section);
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+    };
   }, []);
 
   return (
     <section
       ref={sectionRef}
       id="portfolio"
-      className="
+      className={`
         relative
         w-full
         overflow-hidden
         bg-background
-      "
+      `}
     >
 
-      {/* =====================================
+      {/* ==========================================
           HEADER
-      ===================================== */}
+      ========================================== */}
 
       <div
-        className="
-          portfolio-header
+        className={`
           w-full
           px-5
+          pt-16
+          pb-10
+
           sm:px-8
+          sm:pt-20
+          sm:pb-12
+
           md:px-12
+          md:pt-24
+          md:pb-14
+
           lg:px-16
-          pt-20
-          sm:pt-24
-          md:pt-28
-          lg:pt-32
-          pb-12
-          sm:pb-16
-          lg:pb-20
-        "
+          lg:pt-28
+          lg:pb-16
+        `}
       >
 
-        <div className="mx-auto max-w-[1200px] text-center">
+        <div
+          className={`
+            mx-auto
+            max-w-[1200px]
+            text-center
+          `}
+        >
 
           {/* Label */}
 
-          <div className="mb-4 inline-flex items-center gap-2">
-
-            <span className="h-2 w-2 rounded-full bg-secondary" />
+          <div
+            className={`
+              mb-4
+              inline-flex
+              items-center
+              gap-2
+            `}
+          >
 
             <span
-              className="
+              className={`
+                h-2
+                w-2
+                rounded-full
+                bg-secondary
+              `}
+            />
+
+            <span
+              className={`
                 font-space-grotesk
-                text-xs
+                text-[10px]
                 uppercase
                 tracking-[0.2em]
                 text-text-secondary/60
-                sm:text-sm
-              "
+
+                sm:text-xs
+
+                md:text-sm
+              `}
             >
               Portfolio
             </span>
@@ -123,40 +177,53 @@ const Portfolio = () => {
           {/* Heading */}
 
           <h2
-            className="
+            className={`
+              mx-auto
+              max-w-[900px]
               font-space-grotesk
-              text-4xl
+              text-[2.35rem]
               font-bold
+              leading-[1.05]
               tracking-tight
               text-text
+
               sm:text-5xl
+
               md:text-6xl
+
               lg:text-7xl
+
               xl:text-8xl
-            "
+            `}
           >
-            Explore Our
-            <span className="text-secondary"> Real Work</span>
+            Explore Our{" "}
+            <span className="text-secondary">
+              Real Work
+            </span>
           </h2>
 
 
           {/* Description */}
 
           <p
-            className="
+            className={`
               mx-auto
-              mt-5
+              mt-4
               max-w-xl
               font-space-grotesk
               text-sm
               leading-relaxed
               text-text-secondary/60
+
+              sm:mt-5
               sm:text-base
+
               lg:text-lg
-            "
+            `}
           >
-            From high-converting websites to powerful digital experiences,
-            explore some of the work we&apos;ve created for modern businesses.
+            From high-converting websites to powerful digital
+            experiences, explore some of the work we&apos;ve
+            created for modern businesses.
           </p>
 
         </div>
@@ -164,59 +231,79 @@ const Portfolio = () => {
       </div>
 
 
-      {/* =====================================
-          HORIZONTAL SCROLL AREA
-      ===================================== */}
+      {/* ==========================================
+          HORIZONTAL PROJECT AREA
+      ========================================== */}
 
       <div
         ref={scrollAreaRef}
-        className="
+        className={`
           portfolio-scroll
           relative
           w-full
-          overflow-hidden
-        "
-      >
 
-        {/* TRACK */}
+          /* MOBILE */
+          overflow-x-auto
+          overflow-y-hidden
+          overscroll-x-contain
+          touch-pan-x
+          scrollbar-none
+
+          /* DESKTOP */
+          md:overflow-hidden
+        `}
+      >
 
         <div
           ref={trackRef}
-          className="
+          className={`
             portfolio-track
             flex
             w-max
+            items-start
+
             gap-4
             px-5
-            pb-20
+            pb-10
+
             sm:gap-6
             sm:px-8
-            sm:pb-24
+            sm:pb-12
+
             md:gap-8
             md:px-12
+            md:pb-20
+
             lg:gap-10
             lg:px-16
+            lg:pb-24
+
             xl:gap-12
+
             2xl:px-20
-          "
+          `}
         >
 
           {projects.map((project, index) => (
 
             <article
               key={project.slug}
-              className="
+              className={`
                 portfolio-card
                 group
                 relative
                 flex-shrink-0
 
+                /* MOBILE */
                 w-[86vw]
 
-                sm:w-[74vw]
+                /* SMALL TABLET */
+                sm:w-[78vw]
 
-                md:w-[65vw]
+                /* TABLET */
+                md:w-[68vw]
 
+                /* DESKTOP */
                 lg:w-[58vw]
 
                 xl:w-[52vw]
@@ -224,92 +311,104 @@ const Portfolio = () => {
                 2xl:w-[48vw]
 
                 max-w-[820px]
-              "
+              `}
             >
 
-              {/* =====================================
-                  IMAGE
-              ===================================== */}
+              {/* ==================================
+                  PROJECT IMAGE
+              ================================== */}
 
               <Link
                 href={`/portfolio/${project.slug}`}
-                className="block"
+                className={`
+                  block
+                  w-full
+                  focus:outline-none
+                `}
               >
 
                 <div
-                  className="
+                  className={`
                     relative
                     aspect-[16/10]
                     w-full
                     overflow-hidden
                     rounded-2xl
                     bg-gray-100
+
                     sm:rounded-3xl
-                  "
+                  `}
                 >
 
                   <Image
                     src={project.image}
                     alt={`${project.title} project preview`}
                     fill
-                    sizes="
-                      (max-width: 640px) 86vw,
-                      (max-width: 768px) 74vw,
-                      (max-width: 1024px) 65vw,
-                      (max-width: 1280px) 58vw,
-                      (max-width: 1536px) 52vw,
-                      48vw
-                    "
-                    className="
+                    priority={index === 0}
+                    sizes="(max-width: 640px) 86vw, (max-width: 768px) 78vw, (max-width: 1024px) 68vw, (max-width: 1280px) 58vw, (max-width: 1536px) 52vw, 48vw"
+                    className={`
                       object-cover
                       transition-transform
                       duration-700
                       ease-out
-                      group-hover:scale-[1.04]
-                    "
+
+                      md:group-hover:scale-[1.04]
+                    `}
                   />
 
 
                   {/* Overlay */}
 
                   <div
-                    className="
+                    className={`
                       absolute
                       inset-0
                       bg-black/0
                       transition-colors
                       duration-500
-                      group-hover:bg-black/20
-                    "
+
+                      md:group-hover:bg-black/20
+                    `}
                   />
 
 
-                  {/* Arrow */}
+                  {/* ==================================
+                      ARROW
+                  ================================== */}
 
                   <div
-                    className="
+                    className={`
                       absolute
-                      right-4
-                      top-4
+                      right-3
+                      top-3
+
                       flex
                       h-10
                       w-10
-                      translate-y-3
                       items-center
                       justify-center
+
                       rounded-full
                       bg-white
                       text-text
-                      opacity-0
-                      transition-all
-                      duration-500
-                      group-hover:translate-y-0
-                      group-hover:opacity-100
-                      sm:right-6
-                      sm:top-6
-                      sm:h-12
-                      sm:w-12
-                    "
+
+                      sm:right-5
+                      sm:top-5
+                      sm:h-11
+                      sm:w-11
+
+                      md:right-6
+                      md:top-6
+                      md:h-12
+                      md:w-12
+
+                      md:translate-y-3
+                      md:opacity-0
+                      md:transition-all
+                      md:duration-500
+                      md:group-hover:translate-y-0
+                      md:group-hover:opacity-100
+                    `}
                   >
 
                     <svg
@@ -317,14 +416,25 @@ const Portfolio = () => {
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
-                      className="h-5 w-5 sm:h-6 sm:w-6"
+                      className={`
+                        h-5
+                        w-5
+
+                        sm:h-[21px]
+                        sm:w-[21px]
+
+                        md:h-6
+                        md:w-6
+                      `}
                     >
+
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M14 5l7 7m0 0l-7 7m7-7H3"
                       />
+
                     </svg>
 
                   </div>
@@ -334,47 +444,63 @@ const Portfolio = () => {
               </Link>
 
 
-              {/* =====================================
+              {/* ==================================
                   PROJECT INFORMATION
-              ===================================== */}
+              ================================== */}
 
-              <div className="mt-5 sm:mt-6">
+              <div
+                className={`
+                  mt-4
+                  sm:mt-5
+                  md:mt-6
+                `}
+              >
 
                 <div
-                  className="
+                  className={`
                     flex
                     items-start
                     justify-between
                     gap-4
-                  "
+                  `}
                 >
+
+                  {/* Project title */}
 
                   <div className="min-w-0">
 
                     <p
-                      className="
-                        mb-2
+                      className={`
+                        mb-1.5
                         font-space-grotesk
-                        text-xs
+                        text-[10px]
                         uppercase
-                        tracking-widest
+                        tracking-[0.16em]
                         text-secondary
-                        sm:text-sm
-                      "
+
+                        sm:mb-2
+                        sm:text-xs
+
+                        md:text-sm
+                        md:tracking-widest
+                      `}
                     >
                       {project.category}
                     </p>
 
 
                     <h3
-                      className="
+                      className={`
                         font-space-grotesk
                         text-xl
                         font-semibold
+                        leading-tight
                         text-text
+
                         sm:text-2xl
+
                         md:text-3xl
-                      "
+                      `}
                     >
                       {project.title}
                     </h3>
@@ -382,17 +508,17 @@ const Portfolio = () => {
                   </div>
 
 
-                  {/* Project number */}
+                  {/* Number */}
 
                   <span
-                    className="
-                      hidden
+                    className={`
                       shrink-0
                       font-space-grotesk
-                      text-sm
+                      text-xs
                       text-text-secondary/40
-                      sm:block
-                    "
+
+                      sm:text-sm
+                    `}
                   >
                     {String(index + 1).padStart(2, "0")}
                   </span>
@@ -400,16 +526,22 @@ const Portfolio = () => {
                 </div>
 
 
+                {/* Description */}
+
                 <p
-                  className="
-                    mt-3
+                  className={`
+                    mt-2
                     max-w-xl
                     font-space-grotesk
-                    text-sm
+                    text-xs
                     leading-relaxed
                     text-text-secondary/60
-                    sm:text-base
-                  "
+
+                    sm:mt-3
+                    sm:text-sm
+
+                    md:text-base
+                  `}
                 >
                   {project.shortDescription}
                 </p>
@@ -421,19 +553,20 @@ const Portfolio = () => {
           ))}
 
 
-          {/* =====================================
-              EXTRA RIGHT SPACE
-              Prevents last card from being clipped
-          ===================================== */}
+          {/* ==================================
+              RIGHT SIDE SPACING
+          ================================== */}
 
           <div
             aria-hidden="true"
-            className="
+            className={`
               h-1
-              w-[10vw]
+              w-[8vw]
               flex-shrink-0
+
+              md:w-[12vw]
               lg:w-[15vw]
-            "
+            `}
           />
 
         </div>
@@ -441,12 +574,55 @@ const Portfolio = () => {
       </div>
 
 
-      {/* =====================================
-          BOTTOM
-      ===================================== */}
+      {/* ==========================================
+          MOBILE SCROLL HINT
+      ========================================== */}
 
       <div
-        className="
+        className={`
+          flex
+          items-center
+          justify-between
+          gap-4
+          px-5
+          pb-8
+          pt-1
+
+          sm:px-8
+
+          md:hidden
+        `}
+      >
+
+        <p
+          className={`
+            font-space-grotesk
+            text-xs
+            text-text-secondary/50
+          `}
+        >
+          Swipe to explore
+        </p>
+
+        <span
+          className={`
+            font-space-grotesk
+            text-xs
+            text-text-secondary/40
+          `}
+        >
+          →
+        </span>
+
+      </div>
+
+
+      {/* ==========================================
+          BOTTOM
+      ========================================== */}
+
+      <div
+        className={`
           mx-auto
           flex
           max-w-[1400px]
@@ -454,31 +630,42 @@ const Portfolio = () => {
           items-start
           justify-between
           gap-5
+
           px-5
-          pb-16
+          pb-14
+
           sm:flex-row
           sm:items-center
           sm:px-8
           sm:pb-20
+
           md:px-12
+
           lg:px-16
-        "
+        `}
       >
 
+        {/* Desktop message */}
+
         <p
-          className="
+          className={`
+            hidden
             font-space-grotesk
             text-sm
             text-text-secondary/50
-          "
+
+            md:block
+          `}
         >
           Scroll to explore our projects
         </p>
 
 
+        {/* View all */}
+
         <Link
           href="/portfolio"
-          className="
+          className={`
             border-b
             border-text
             pb-1
@@ -487,15 +674,33 @@ const Portfolio = () => {
             font-medium
             text-text
             transition-colors
+
             hover:border-secondary
             hover:text-secondary
+
             sm:text-base
-          "
+          `}
         >
           View All Projects
         </Link>
 
       </div>
+
+
+      {/* ==========================================
+          HIDE MOBILE SCROLLBAR
+      ========================================== */}
+
+      <style jsx>{`
+        .scrollbar-none {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
 
     </section>
   );
