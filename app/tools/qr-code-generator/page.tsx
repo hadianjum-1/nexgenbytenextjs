@@ -266,7 +266,7 @@ async function downloadSVG() {
       </h1>
 
       <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-gray-600 sm:text-lg">
-        Create beautiful, custom QR codes in seconds. Personalize
+        Create beautiful and Awesome, custom QR codes in seconds. Personalize
         your colors, preview instantly, and download high-quality
         PNG or SVG files.
       </p>
