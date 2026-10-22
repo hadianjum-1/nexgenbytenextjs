@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
+import { QrCode } from "lucide-react";
+import ToolsDropdown from "./ToolsDropdown";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -434,8 +436,11 @@ const Header = () => {
                 >
                   Contact
                 </Link>
+                 
               </li>
+               <ToolsDropdown />
             </ul>
+         
           </nav>
 
           {/* =================================================
@@ -987,6 +992,31 @@ const Header = () => {
                 </span>
               </Link>
             </li>
+            
+<li ref={addMenuItem}>
+  <Link
+    href="/tools"
+    onClick={closeMenu}
+    className="group flex items-center justify-between border-b border-text/10 py-5 text-3xl font-medium text-text transition-colors duration-300 hover:text-secondary sm:py-6 sm:text-4xl"
+  >
+    <span>Free Tools</span>
+    <span className="text-xl text-text/30 transition-transform duration-300 group-hover:translate-x-2 group-hover:text-secondary sm:text-2xl">
+      ↗
+    </span>
+  </Link>
+</li>
+
+<li ref={addMenuItem}>
+  <Link
+    href="/tools/qr-code-generator"
+    onClick={closeMenu}
+    className="flex items-center gap-3 border-b border-text/10 py-4 pl-4 text-lg text-text-secondary transition-colors hover:text-secondary"
+  >
+    <QrCode size={20} />
+    QR Code Generator
+  </Link>
+</li>
+
 
             {/* CONTACT */}
 

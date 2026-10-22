@@ -22,6 +22,8 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://nexgenbyte.com"),
 
@@ -98,6 +100,8 @@ export const metadata: Metadata = {
     ],
   },
 
+  
+
   twitter: {
     card: "summary_large_image",
 
@@ -138,7 +142,12 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+
+  
 };
+
+
+
 
 export default function RootLayout({
   children,
