@@ -101,13 +101,13 @@ export default function ToolsDropdown() {
 
           <div className="my-1 border-t border-gray-100" />
 
-          <Link
+          {/* <Link
             href="/tools"
             onClick={() => setIsOpen(false)}
             className="block rounded-xl px-3 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50"
           >
             Explore all tools →
-          </Link>
+          </Link> */}
         </div>
       )}
     </div>
