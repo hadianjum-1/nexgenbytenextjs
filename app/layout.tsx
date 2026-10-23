@@ -6,6 +6,7 @@ import MetaPixel from "./Components/MetaPixel";
 import Preloader from "./Components/Preloader";
 import PromoPopup from "./Components/PromoPopup";
 import AIChatbot from "./Components/AIChatbot";
+import CalculatorPopup from "./Components/CalculatorPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -162,7 +163,7 @@ export default function RootLayout({
         <Preloader />
 
         {children}
-
+        <CalculatorPopup/>
         <PromoPopup />
         <AIChatbot />
         <MetaPixel/>

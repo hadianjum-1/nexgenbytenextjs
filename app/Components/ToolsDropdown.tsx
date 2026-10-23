@@ -16,9 +16,9 @@ const tools = [
   {
     name: "Website Cost Calculator",
     description: "Estimate your website budget",
-    href: "/tools/website-cost-calculator",
+    href: "/tools//website-cost-calculator",
     icon: Calculator,
-    status: "Coming soon",
+    status: "Available",
   },
   {
     name: "Website Audit",
