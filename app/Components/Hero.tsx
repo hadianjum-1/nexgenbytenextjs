@@ -14,7 +14,7 @@ const Hero = () => {
 
   const heroRef = useRef<HTMLElement>(null);
 
-  const labelRef = useRef<HTMLSpanElement>(null);
+  const labelRef = useRef<HTMLAnchorElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
 
