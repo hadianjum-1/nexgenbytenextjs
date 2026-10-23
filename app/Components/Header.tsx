@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
-import { QrCode } from "lucide-react";
+import { QrCode , Calculator} from "lucide-react";
 import ToolsDropdown from "./ToolsDropdown";
 
 const Header = () => {
@@ -995,7 +995,7 @@ const Header = () => {
             
 <li ref={addMenuItem}>
   <Link
-    href="/tools"
+    href="/tools/qr-code-generator"
     onClick={closeMenu}
     className="group flex items-center justify-between border-b border-text/10 py-5 text-3xl font-medium text-text transition-colors duration-300 hover:text-secondary sm:py-6 sm:text-4xl"
   >
@@ -1016,6 +1016,22 @@ const Header = () => {
     QR Code Generator
   </Link>
 </li>
+
+{/* WEBSITE COST CALCULATOR */}
+<li ref={addMenuItem}>
+  <Link
+    href="/tools/website-cost-calculator"
+    onClick={closeMenu}
+    className="group flex items-center gap-3 border-b border-text/10 py-4 pl-4 text-lg text-text transition-colors hover:text-secondary"
+  >
+    <Calculator size={20} />
+    <span>Website Cost Calculator</span>
+    <span className="ml-auto text-sm text-text/40 transition-transform group-hover:translate-x-1">
+      ↗
+    </span>
+  </Link>
+</li>
+
 
 
             {/* CONTACT */}

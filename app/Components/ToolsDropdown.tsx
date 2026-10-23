@@ -16,7 +16,7 @@ const tools = [
   {
     name: "Website Cost Calculator",
     description: "Estimate your website budget",
-    href: "/tools//website-cost-calculator",
+    href: "/tools/website-cost-calculator",
     icon: Calculator,
     status: "Available",
   },
@@ -100,14 +100,6 @@ export default function ToolsDropdown() {
           })}
 
           <div className="my-1 border-t border-gray-100" />
-
-          {/* <Link
-            href="/tools"
-            onClick={() => setIsOpen(false)}
-            className="block rounded-xl px-3 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50"
-          >
-            Explore all tools →
-          </Link> */}
         </div>
       )}
     </div>
